@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'billing.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'billing_db',       # your database name
+        'USER': 'postgres',         # your postgres username
+        'PASSWORD': 'postgres123',# your postgres password
+        'HOST': 'localhost',        # or 127.0.0.1
+        'PORT': '5432',             # default PostgreSQL port
     }
 }
 
