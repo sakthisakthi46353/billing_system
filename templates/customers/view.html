@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Customer</title>
+</head>
+<body>
+    <h1>Customer Details</h1>
+
+    <p><b>Name:</b> {{ customer.name }}</p>
+    <p><b>Email:</b> {{ customer.email }}</p>
+
+    <a href="/customers/{{ customer.id }}/edit/">Edit</a>
+    <a href="/customers/{{ customer.id }}/delete/">Delete</a>
+    <br><br>
+    <a href="/customers/">Back to List</a>
+</body>
+</html>

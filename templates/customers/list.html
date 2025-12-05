@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customers List</title>
+</head>
+<body>
+    <h1>Customers</h1>
+
+    <a href="/customers/add/">Add New Customer</a><br><br>
+
+    {% if customers %}
+        <ul>
+        {% for customer in customers %}
+            <li>
+                {{ customer.name }} - {{ customer.email }}  
+                <a href="/customers/{{ customer.id }}/">View</a>
+                <a href="/customers/{{ customer.id }}/edit/">Edit</a>
+                <a href="/customers/{{ customer.id }}/delete/">Delete</a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No customers found.</p>
+    {% endif %}
+</body>
+</html>

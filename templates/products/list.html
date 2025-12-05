@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products List</title>
+</head>
+<body>
+    <h1>Products</h1>
+
+    <a href="/products/add/">Add New Product</a><br><br>
+
+    {% if products %}
+        <ul>
+        {% for product in products %}
+            <li>
+                {{ product.name }} - ₹{{ product.price }}
+                <a href="/products/{{ product.id }}/">View</a>
+                <a href="/products/{{ product.id }}/edit/">Edit</a>
+                <a href="/products/{{ product.id }}/delete/">Delete</a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No products available.</p>
+    {% endif %}
+</body>
+</html>
