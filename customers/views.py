@@ -1,47 +1,33 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Customer
 
-# List Customers
 def customer_list(request):
     customers = Customer.objects.all()
-    return render(request, "customers/list.html", {"customers": customers})
+    return render(request, 'customers/list.html', {'customers': customers})
 
-
-# Add Customer
 def customer_add(request):
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        Customer.objects.create(name=name, email=email)
-        return redirect("/customers/")
-    return render(request, "customers/add.html")
+        Customer.objects.create(
+            name=request.POST['name'],
+            email=request.POST['email'],
+            phone=request.POST['phone'],
+            address=request.POST['address'],
+        )
+        return redirect('customer_list')
+    return render(request, 'customers/add.html')
 
-
-# View Customer
-def customer_view(request, id):
-    customer = get_object_or_404(Customer, id=id)
-    return render(request, "customers/view.html", {"customer": customer})
-
-
-# Edit Customer
-def customer_edit(request, id):
-    customer = get_object_or_404(Customer, id=id)
-
+def customer_edit(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
     if request.method == "POST":
-        customer.name = request.POST.get("name")
-        customer.email = request.POST.get("email")
+        customer.name = request.POST['name']
+        customer.email = request.POST['email']
+        customer.phone = request.POST['phone']
+        customer.address = request.POST['address']
         customer.save()
-        return redirect("/customers/")
+        return redirect('customer_list')
+    return render(request, 'customers/edit.html', {'customer': customer})
 
-    return render(request, "customers/edit.html", {"customer": customer})
-
-
-# Delete Customer
-def customer_delete(request, id):
-    customer = get_object_or_404(Customer, id=id)
-
-    if request.method == "POST":
-        customer.delete()
-        return redirect("/customers/")
-
-    return render(request, "customers/delete.html", {"customer": customer})
+def customer_delete(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    customer.delete()
+    return redirect('customer_list')

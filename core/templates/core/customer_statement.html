@@ -1,0 +1,22 @@
+<h1>Customer Statement: {{ customer.name }}</h1>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>Balance</th>
+    </tr>
+
+    {% for row in history %}
+    <tr>
+        <td>{{ row.date }}</td>
+        <td>{{ row.description }}</td>
+        <td>{{ row.amount }}</td>
+        <td>{{ row.balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/reports/">← Back to Reports</a>

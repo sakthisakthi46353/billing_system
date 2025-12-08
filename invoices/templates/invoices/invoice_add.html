@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Invoice</title>
+</head>
+<body>
+
+<h2>Add Invoice</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <!-- Customer dropdown -->
+    <label><strong>Customer:</strong></label>
+    <select name="customer" required>
+        <option value="">-- Select Customer --</option>
+        {% for c in customers %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+
+    <h3>Items</h3>
+    <p>You can add up to 3 products in one invoice.</p>
+
+    <!-- 3 product rows -->
+    {% for i in "123" %}
+    <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+        
+        <label>Product:</label>
+        <select name="product">
+            <option value="">-- Select Product --</option>
+            {% for p in products %}
+            <option value="{{ p.id }}">
+                {{ p.name }} (Stock: {{ p.stock }}, ₹{{ p.price }})
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Qty:</label>
+        <input type="number" name="quantity" min="1">
+    </div>
+    {% endfor %}
+
+    <br>
+    <button type="submit">Save Invoice</button>
+
+</form>
+
+</body>
+</html>

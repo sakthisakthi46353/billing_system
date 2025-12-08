@@ -1,0 +1,26 @@
+<h2>Select Invoice to Add Payment</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    {% for inv in invoices %}
+    <tr>
+        <td>{{ inv.id }}</td>
+        <td>{{ inv.customer.name }}</td>
+        <td>{{ inv.total }}</td>
+        <td>{{ inv.status }}</td>
+        <td>
+            <a href="/payments/{{ inv.id }}/add/">Add Payment</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/">← Back to Dashboard</a>

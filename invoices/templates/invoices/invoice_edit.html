@@ -1,0 +1,23 @@
+<h2>Edit Invoice</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Customer:</label>
+    <select name="customer">
+        {% for c in customers %}
+            <option value="{{ c.id }}" {% if invoice.customer.id == c.id %}selected{% endif %}>
+                {{ c.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label>Total:</label>
+    <input type="number" name="total" step="0.01" value="{{ invoice.total }}">
+
+    <br><br>
+
+    <button type="submit">Save</button>
+</form>

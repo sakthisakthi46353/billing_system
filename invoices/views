@@ -1,0 +1,83 @@
+# invoices/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db import transaction
+from .models import Invoice, InvoiceItem
+from customers.models import Customer
+from products.models import Product
+from django.contrib import messages
+
+
+def invoice_list(request):
+    invoices = Invoice.objects.all()
+    return render(request, 'invoices/invoice_list.html', {'invoices': invoices})
+
+
+@transaction.atomic
+def invoice_add(request):
+    customers = Customer.objects.all()
+    products = Product.objects.all()
+
+    if request.method == "POST":
+        customer_id = request.POST.get('customer')
+        tax_rate = 0.10  # 10% tax – நீ விரும்பினால் change பண்ணலாம்
+
+        if not customer_id:
+            messages.error(request, "Customer must be selected")
+            return redirect('invoice_add')
+
+        customer = get_object_or_404(Customer, id=customer_id)
+
+        # புதிய invoice உருவாக்கு
+        invoice = Invoice.objects.create(customer=customer)
+
+        subtotal = 0
+
+        product_ids = request.POST.getlist('product')
+        quantities = request.POST.getlist('quantity')
+
+        for prod_id, qty_str in zip(product_ids, quantities):
+            if not prod_id or not qty_str:
+                continue  # வெறுமையாக இருந்தா skip
+
+            qty = int(qty_str)
+            if qty <= 0:
+                continue
+
+            product = get_object_or_404(Product, id=prod_id)
+
+            # stock check
+            if product.stock < qty:
+                messages.error(request, f"Not enough stock for {product.name}")
+                raise transaction.TransactionManagementError("Stock error")
+
+            # invoice item create
+            item = InvoiceItem.objects.create(
+                invoice=invoice,
+                product=product,
+                quantity=qty,
+                price=product.price
+            )
+
+            line_total = item.line_total()
+            subtotal += line_total
+
+            # stock deduct
+            product.stock -= qty
+            product.save()
+
+        # tax + total
+        tax = subtotal * tax_rate
+        total = subtotal + tax
+
+        invoice.subtotal = subtotal
+        invoice.tax = tax
+        invoice.total = total
+        invoice.save()
+
+        messages.success(request, f"Invoice #{invoice.id} created")
+        return redirect('home')  # நீ dashboard name இதுதான்னு assume பண்ணுறேன்
+
+    return render(request, 'invoices/invoice_add.html', {
+        'customers': customers,
+        'products': products,
+    })

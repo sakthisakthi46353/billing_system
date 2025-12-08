@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Customer</title>
-</head>
-<body>
-    <h1>Add Customer</h1>
+<h1>Add Customer</h1>
 
-    <form method="POST">
-        {% csrf_token %}
-        Name: <input type="text" name="name"><br><br>
-        Email: <input type="email" name="email"><br><br>
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>
+<form method="POST">
+    {% csrf_token %}
+    Name: <input name="name"><br><br>
+    Email: <input name="email"><br><br>
+    Phone: <input name="phone"><br><br>
+    Address: <textarea name="address"></textarea><br><br>
+    <button type="submit">Save</button>
+</form>
+

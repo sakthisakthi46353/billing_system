@@ -1,0 +1,44 @@
+<h2>Customer Balance Summary</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Customer</th>
+        <th>Total Invoiced</th>
+        <th>Total Paid</th>
+        <th>Balance</th>
+    </tr>
+
+    {% for row in data %}
+    <tr>
+        <td>{{ row.customer.name }}</td>
+        <td>{{ row.invoiced }}</td>
+        <td>{{ row.paid }}</td>
+        <td>{{ row.balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/reports/">← Back to Reports</a>
+<h2>Customer Balance Summary</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Customer</th>
+        <th>Total Invoiced</th>
+        <th>Total Paid</th>
+        <th>Balance</th>
+    </tr>
+
+    {% for row in report %}
+    <tr>
+        <td>{{ row.customer.name }}</td>
+        <td>{{ row.invoiced }}</td>
+        <td>{{ row.paid }}</td>
+        <td>{{ row.balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/reports/">← Back to Reports</a>

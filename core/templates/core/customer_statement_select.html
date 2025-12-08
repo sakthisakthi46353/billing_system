@@ -1,0 +1,14 @@
+<h2>Select Customer</h2>
+
+<ul>
+    {% for c in customers %}
+        <li>
+            <a href="/reports/customer-statement/{{ c.id }}/">
+                {{ c.name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+
+<br>
+<a href="/reports/">← Back to Reports</a>

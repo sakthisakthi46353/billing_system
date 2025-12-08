@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment History</title>
+</head>
+<body>
+
+<h1>Payment History for Invoice #{{ invoice.id }}</h1>
+
+<p><b>Customer:</b> {{ invoice.customer.name }}</p>
+<p><b>Total:</b> {{ invoice.total }}</p>
+<p><b>Paid Amount:</b> {{ invoice.paid_amount }}</p>
+<p><b>Balance:</b> {{ invoice.balance }}</p>
+<p><b>Status:</b> {{ invoice.status }}</p>
+
+<hr>
+
+<h2>Payments</h2>
+
+{% if payments %}
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Date</th>
+        <th>Amount</th>
+    </tr>
+
+    {% for p in payments %}
+    <tr>
+        <td>{{ p.date }}</td>
+        <td>{{ p.amount }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No payments yet.</p>
+{% endif %}
+
+<br>
+<a href="/">⬅ Back to Dashboard</a>
+
+</body>
+</html>
+<h2>Payment History for Invoice #{{ invoice.id }}</h2>
+
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Payment</th>
+        <th>Balance</th>
+    </tr>
+
+    {% for h in history %}
+    <tr>
+        <td>{{ h.date }}</td>
+        <td>{{ h.amount }}</td>
+        <td>{{ h.balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br><a href="/invoices/{{ invoice.id }}/">Back to Invoice</a>

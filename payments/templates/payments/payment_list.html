@@ -1,0 +1,28 @@
+<h2>Payments</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Invoice</th>
+        <th>Customer</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Action</th>
+    </tr>
+
+    {% for p in payments %}
+    <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.invoice.id }}</td>
+        <td>{{ p.invoice.customer.name }}</td>
+        <td>{{ p.amount }}</td>
+        <td>{{ p.date }}</td>
+        <td>
+            <a href="/payments/{{ p.invoice.id }}/history/">History</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/">← Back to Dashboard</a>

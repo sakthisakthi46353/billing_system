@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice #{{ invoice.id }}</title>
+</head>
+<body>
+
+<h1>Invoice #{{ invoice.id }}</h1>
+<h2>Customer: {{ invoice.customer.name }}</h2>
+<p>Date: {{ invoice.date }}</p>
+
+<hr>
+
+<h3>Items</h3>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.line_total }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h3>Totals</h3>
+<p>Subtotal: {{ invoice.subtotal }}</p>
+<p>Tax: {{ invoice.tax }}</p>
+<p>Total: {{ invoice.total }}</p>
+<p>Paid: {{ invoice.paid_amount }}</p>
+<p>Balance: {{ invoice.balance }}</p>
+<p>Status: {{ invoice.status }}</p>
+
+<hr>
+
+<h3>Payment History</h3>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Date</th>
+        <th>Amount</th>
+    </tr>
+
+    {% for p in payments %}
+    <tr>
+        <td>{{ p.date }}</td>
+        <td>{{ p.amount }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="2">No payments yet</td></tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="/payments/{{ invoice.id }}/add/">💰 Add Payment</a>
+<br><br>
+
+<a href="/">⬅ Back to Dashboard</a>
+
+</body>
+</html>

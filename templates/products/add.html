@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Product</title>
-</head>
-<body>
-    <h1>Add Product</h1>
+<h1>Add Product</h1>
 
-    <form method="POST">
-        {% csrf_token %}
-        Name: <input type="text" name="name"><br><br>
-        Price: <input type="number" step="0.01" name="price"><br><br>
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>
+<form method="POST">
+    {% csrf_token %}
+    Name: <input name="name"><br><br>
+    Price: <input name="price"><br><br>
+    Stock: <input name="stock"><br><br>
+    <button type="submit">Save</button>
+</form>
+

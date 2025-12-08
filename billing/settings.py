@@ -29,7 +29,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,8 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+
+    'customers',
+    'products',
+    'invoices',
+    'payments',
+    'reports',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -72,18 +77,16 @@ WSGI_APPLICATION = 'billing.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'billing_db',       # your database name
-        'USER': 'postgres',         # your postgres username
-        'PASSWORD': 'postgres123',# your postgres password
-        'HOST': 'localhost',        # or 127.0.0.1
-        'PORT': '5432',             # default PostgreSQL port
+        'NAME': 'billing_db',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

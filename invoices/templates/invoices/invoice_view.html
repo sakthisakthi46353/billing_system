@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice #{{ invoice.id }}</title>
+</head>
+<body>
+
+<h2>Invoice #{{ invoice.id }}</h2>
+
+<p><b>Customer:</b> {{ invoice.customer.name }}</p>
+<p><b>Date:</b> {{ invoice.date }}</p>
+<p><b>Status:</b> {{ invoice.status }}</p>
+
+<hr>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+    </tr>
+
+    {% for i in items %}
+    <tr>
+        <td>{{ i.product.name }}</td>
+        <td>{{ i.quantity }}</td>
+        <td>{{ i.price }}</td>
+        <td>{{ i.total }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<h3>Subtotal: {{ invoice.subtotal }}</h3>
+<h3>Tax: {{ invoice.tax }}</h3>
+<h3><b>Total: {{ invoice.total }}</b></h3>
+
+<hr>
+
+<h3>Paid: {{ paid_amount }}</h3>
+
+{% if balance > 0 %}
+    <h3>Balance: {{ balance }}</h3>
+{% else %}
+    <h3>Balance: 0.00</h3>
+{% endif %}
+
+<hr>
+
+<p>
+    <a href="{% url 'payment_add' invoice.id %}">💰 Add Payment</a><br>
+    <a href="{% url 'payment_history' invoice.id %}">📄 Payment History</a><br>
+    <a href="/invoices/">← Back to Dashboard</a>
+</p>
+
+</body>
+</html>

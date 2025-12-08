@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Customer</title>
-</head>
-<body>
-    <h1>Edit Customer</h1>
+<h1>Edit Customer</h1>
 
-    <form method="POST">
-        {% csrf_token %}
-        Name: <input type="text" name="name" value="{{ customer.name }}"><br><br>
-        Email: <input type="email" name="email" value="{{ customer.email }}"><br><br>
-        <button type="submit">Update</button>
-    </form>
-</body>
-</html>
+<form method="POST">
+    {% csrf_token %}
+    Name: <input name="name" value="{{ customer.name }}"><br><br>
+    Email: <input name="email" value="{{ customer.email }}"><br><br>
+    Phone: <input name="phone" value="{{ customer.phone }}"><br><br>
+    Address: <textarea name="address">{{ customer.address }}</textarea><br><br>
+    <button type="submit">Update</button>
+</form>
