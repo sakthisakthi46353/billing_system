@@ -1,0 +1,11 @@
+<p>
+    Customer: {{ form.customer }}
+</p>
+
+{% for item in items %}
+<p>
+    Product: {{ item.product }}
+    Qty: {{ item.quantity }}
+    Price: {{ item.price }}
+</p>
+{% endfor %}

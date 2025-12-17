@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Customer</title>
+</head>
+<body>
+
+<h2>Add Customer</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Name</label><br>
+    <input type="text" name="name"><br><br>
+
+    <label>Phone</label><br>
+    <input type="text" name="phone"><br><br>
+
+    <button type="submit">Save</button>
+</form>
+
+<br>
+<a href="/customers/">Back</a>
+
+</body>
+</html>

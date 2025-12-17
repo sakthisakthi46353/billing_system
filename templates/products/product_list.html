@@ -1,0 +1,15 @@
+<h2>Products</h2>
+
+<table border="1">
+<tr>
+  <th>Name</th>
+  <th>Price</th>
+</tr>
+
+{% for p in products %}
+<tr>
+  <td>{{ p.name }}</td>
+  <td>{{ p.price }}</td>
+</tr>
+{% endfor %}
+</table>

@@ -17,11 +17,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'core',
     'customers',
     'products',
     'invoices',
-    'core',
     'payments',
+    'reports',
+    'dashboard',   # 🔥 THIS MUST BE HERE
 ]
 
 
@@ -41,8 +43,8 @@ ROOT_URLCONF = 'billing_system.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
+        'DIRS': [BASE_DIR / 'templates'],  # ok even if empty
+        'APP_DIRS': True,                  # 🔥 VERY IMPORTANT
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -53,6 +55,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'billing_system.wsgi.application'
 ASGI_APPLICATION = 'billing_system.asgi.application'

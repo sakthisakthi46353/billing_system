@@ -11,5 +11,6 @@ urlpatterns = [
     path('reports/customer-balance/', views.customer_balance, name='customer_balance'),
     path('reports/customer-statement/<int:customer_id>/', views.customer_statement, name='customer_statement'),
     path('reports/customer-statement/<int:customer_id>/', views.customer_statement, name='customer_statement'),
-
+    path('', views.dashboard, name='dashboard'),
+    path('core/', views.core_home, name='core_home'),
 ]

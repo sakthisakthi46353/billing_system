@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Select Customer{% endblock %}
+
+{% block content %}
+<h2>Select Customer</h2>
+
+<ul>
+    {% for c in customers %}
+        <li>
+            <a href="{% url 'customer_statement' c.id %}">
+                {{ c.name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+
+<br>
+<a href="{% url 'reports_home' %}">← Back to Reports</a>
+{% endblock %}

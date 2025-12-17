@@ -11,4 +11,6 @@ urlpatterns = [
     path('<int:pk>/edit/', views.invoice_edit, name='invoice_edit'),
 
     path('<int:pk>/delete/', views.invoice_delete, name='invoice_delete'),
+
+    path('<int:invoice_id>/edit/', views.invoice_edit, name='invoice_edit'),
 ]

@@ -1,7 +1,9 @@
 from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Sum
 
 from .models import Invoice, InvoiceItem
 from customers.models import Customer
@@ -13,8 +15,10 @@ from payments.models import Payment
 # LIST INVOICES
 # ================================
 def invoice_list(request):
-    invoices = Invoice.objects.all()
-    return render(request, 'invoices/invoice_list.html', {'invoices': invoices})
+    invoices = Invoice.objects.all().order_by('-id')
+    return render(request, 'invoices/invoice_list.html', {
+        'invoices': invoices
+    })
 
 
 # ================================
@@ -32,8 +36,6 @@ def invoice_add(request):
             return redirect('invoice_add')
 
         customer = get_object_or_404(Customer, id=customer_id)
-
-        # create invoice
         invoice = Invoice.objects.create(customer=customer)
 
         subtotal = Decimal('0')
@@ -42,7 +44,6 @@ def invoice_add(request):
         quantities = request.POST.getlist('quantity')
 
         for prod_id, qty_str in zip(product_ids, quantities):
-
             if not prod_id or not qty_str:
                 continue
 
@@ -52,12 +53,13 @@ def invoice_add(request):
 
             product = get_object_or_404(Product, id=prod_id)
 
-            # check stock
             if product.stock < qty:
-                messages.error(request, f"Not enough stock for {product.name}")
+                messages.error(
+                    request,
+                    f"Not enough stock for {product.name}"
+                )
                 raise transaction.TransactionManagementError("Stock error")
 
-            # create invoice item
             item = InvoiceItem.objects.create(
                 invoice=invoice,
                 product=product,
@@ -66,13 +68,10 @@ def invoice_add(request):
             )
 
             subtotal += item.price * item.quantity
-
-            # reduce stock
             product.stock -= qty
             product.save()
 
-        # calculate tax & total
-        tax = subtotal * Decimal('0.10')  # 10%
+        tax = subtotal * Decimal('0.10')
         total = subtotal + tax
 
         invoice.subtotal = subtotal
@@ -80,8 +79,11 @@ def invoice_add(request):
         invoice.total = total
         invoice.save()
 
-        messages.success(request, f"Invoice #{invoice.id} created successfully")
-        return redirect('/')
+        messages.success(
+            request,
+            f"Invoice #{invoice.id} created successfully"
+        )
+        return redirect('invoice_view', pk=invoice.id)
 
     return render(request, 'invoices/invoice_add.html', {
         'customers': customers,
@@ -90,73 +92,121 @@ def invoice_add(request):
 
 
 # ================================
-# INVOICE DETAIL PAGE
+# VIEW INVOICE
 # ================================
-def invoice_detail(request, id):
-    invoice = get_object_or_404(Invoice, id=id)
-    items = invoice.items.all()
-    payments = invoice.payments.all()
+def invoice_view(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
 
-    return render(request, 'invoices/invoice_detail.html', {
+    items = invoice.items.all()
+
+    total_paid = invoice.payments.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+
+    balance = invoice.total - total_paid
+
+    return render(request, 'invoices/invoice_view.html', {
         'invoice': invoice,
         'items': items,
-        'payments': payments,
+        'total_paid': total_paid,
+        'balance': balance
     })
 
 
 # ================================
-# EDIT INVOICE
+# EDIT INVOICE (ADVANCED – STOCK REVERSE)
 # ================================
-def invoice_edit(request, id):
-    invoice = get_object_or_404(Invoice, id=id)
-    customers = Customer.objects.all()
+@transaction.atomic
+def invoice_edit(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    products = Product.objects.all()
 
     if request.method == "POST":
-        invoice.customer = Customer.objects.get(id=request.POST['customer'])
+
+        # 1️⃣ OLD ITEMS → STOCK BACK
+        old_items = InvoiceItem.objects.filter(invoice=invoice)
+        for item in old_items:
+            product = item.product
+            product.stock += item.quantity
+            product.save()
+
+        # 2️⃣ DELETE OLD ITEMS
+        old_items.delete()
+
+        subtotal = Decimal('0')
+
+        # 3️⃣ ADD NEW ITEMS → STOCK REDUCE
+        product_ids = request.POST.getlist('product')
+        quantities = request.POST.getlist('quantity')
+
+        for prod_id, qty_str in zip(product_ids, quantities):
+            if not prod_id or not qty_str:
+                continue
+
+            qty = int(qty_str)
+            if qty <= 0:
+                continue
+
+            product = get_object_or_404(Product, id=prod_id)
+
+            if product.stock < qty:
+                messages.error(
+                    request,
+                    f"Not enough stock for {product.name}"
+                )
+                raise transaction.TransactionManagementError("Stock error")
+
+            item = InvoiceItem.objects.create(
+                invoice=invoice,
+                product=product,
+                quantity=qty,
+                price=product.price
+            )
+
+            subtotal += item.price * item.quantity
+            product.stock -= qty
+            product.save()
+
+        # 4️⃣ RECALCULATE TOTAL
+        tax = subtotal * Decimal('0.10')
+        total = subtotal + tax
+
+        invoice.subtotal = subtotal
+        invoice.tax = tax
+        invoice.total = total
         invoice.save()
-        messages.success(request, "Invoice updated")
-        return redirect('/')
+
+        messages.success(
+            request,
+            f"Invoice #{invoice.id} updated successfully"
+        )
+        return redirect('invoice_view', pk=invoice.id)
+
+    items = invoice.items.all()
 
     return render(request, 'invoices/invoice_edit.html', {
         'invoice': invoice,
-        'customers': customers,
+        'items': items,
+        'products': products
     })
 
 
 # ================================
 # DELETE INVOICE
 # ================================
-def invoice_delete(request, id):
-    invoice = get_object_or_404(Invoice, id=id)
+@transaction.atomic
+def invoice_delete(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
 
-    # delete all payments before deleting invoice
+    # delete payments
     Payment.objects.filter(invoice=invoice).delete()
+
+    # restore stock
+    for item in invoice.items.all():
+        product = item.product
+        product.stock += item.quantity
+        product.save()
 
     invoice.delete()
     messages.error(request, "Invoice deleted")
-    return redirect('/')
-
-def invoice_view(request, id):
-    invoice = get_object_or_404(Invoice, id=id)
-    return render(request, 'invoices/invoice_view.html', {
-        'invoice': invoice,
-        'items': invoice.items.all(),
-        'payments': invoice.payments.all(),
-    })
-
-def invoice_view(request, pk):
-    invoice = Invoice.objects.get(id=pk)
-    items = InvoiceItem.objects.filter(invoice=invoice)
-    payments = Payment.objects.filter(invoice=invoice)
-
-    paid_amount = sum(p.amount for p in payments)
-    balance = invoice.total - paid_amount
-
-    context = {
-        'invoice': invoice,
-        'items': items,
-        'payments': payments,
-        'paid_amount': paid_amount,
-        'balance': balance,
-    }
-    return render(request, "invoices/invoice_view.html", context)
+    return redirect('invoice_list')

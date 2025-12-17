@@ -14,21 +14,40 @@ class Invoice(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
 
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    tax = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    subtotal = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    tax = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='UNPAID')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='UNPAID'
+    )
 
     def __str__(self):
         return f"Invoice #{self.id} - {self.customer.name}"
 
     # ----------------------
-    # Total paid so far
+    # Total paid amount
     # ----------------------
     @property
     def paid_amount(self):
-        return sum((p.amount for p in self.payments.all()), Decimal('0'))
+        return sum(
+            (payment.amount for payment in self.payments.all()),
+            Decimal('0.00')
+        )
 
     # ----------------------
     # Remaining balance
@@ -38,10 +57,10 @@ class Invoice(models.Model):
         return self.total - self.paid_amount
 
     # ----------------------
-    # Update status after payment
+    # Update invoice status
     # ----------------------
     def update_status(self):
-        if self.paid_amount == 0:
+        if self.paid_amount <= 0:
             self.status = 'UNPAID'
         elif self.paid_amount < self.total:
             self.status = 'PARTIALLY_PAID'
@@ -51,11 +70,25 @@ class Invoice(models.Model):
 
 
 class InvoiceItem(models.Model):
-    invoice = models.ForeignKey(Invoice, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
-    quantity = models.IntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    invoice = models.ForeignKey(
+        Invoice,
+        related_name='items',
+        on_delete=models.CASCADE
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT
+    )
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
 
+    # ----------------------
+    # Line total (price × qty)
+    # ----------------------
+    @property
     def line_total(self):
         return self.price * self.quantity
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Sum, F
 
 from customers.models import Customer
@@ -8,15 +8,15 @@ from payments.models import Payment
 
 
 # ============================
-# DASHBOARD
+# DASHBOARD / HOME
 # ============================
 def home(request):
     customers = Customer.objects.all()
     products = Product.objects.all()
-    invoices = Invoice.objects.all()
-    payments = Payment.objects.all()
+    invoices = Invoice.objects.all().order_by('-id')
+    payments = Payment.objects.all().order_by('-id')
 
-    return render(request, 'core/home.html', {
+    return render(request, 'dashboard/dashboard.html', {
         'customers': customers,
         'products': products,
         'invoices': invoices,
@@ -25,32 +25,35 @@ def home(request):
 
 
 # ============================
-# REPORTS MENU
+# REPORTS HOME
 # ============================
 def reports_home(request):
-    return render(request, 'core/reports_home.html')
+    return render(request, 'reports/home.html')
 
 
 # ============================
 # CUSTOMER BALANCE SUMMARY
 # ============================
 def customer_balance(request):
-    customers = Customer.objects.all()
     report = []
 
-    for c in customers:
-        invoiced = Invoice.objects.filter(customer=c).aggregate(Sum('total'))['total__sum'] or 0
-        paid = Payment.objects.filter(invoice__customer=c).aggregate(Sum('amount'))['amount__sum'] or 0
-        balance = invoiced - paid
+    for c in Customer.objects.all():
+        total_invoiced = Invoice.objects.filter(
+            customer=c
+        ).aggregate(total=Sum('total'))['total'] or 0
+
+        total_paid = Payment.objects.filter(
+            invoice__customer=c
+        ).aggregate(total=Sum('amount'))['total'] or 0
 
         report.append({
             'customer': c,
-            'invoiced': invoiced,
-            'paid': paid,
-            'balance': balance,
+            'total_invoiced': total_invoiced,
+            'total_paid': total_paid,
+            'balance': total_invoiced - total_paid,
         })
 
-    return render(request, 'core/customer_balance.html', {
+    return render(request, 'reports/customer_balance.html', {
         'report': report
     })
 
@@ -60,12 +63,17 @@ def customer_balance(request):
 # ============================
 def sales_summary(request):
     total_invoices = Invoice.objects.count()
-    total_sales = Invoice.objects.aggregate(sum=Sum('total'))['sum'] or 0
-    total_payments = Payment.objects.aggregate(sum=Sum('amount'))['sum'] or 0
+    total_sales = Invoice.objects.aggregate(
+        total=Sum('total')
+    )['total'] or 0
 
-    avg_invoice = total_sales / total_invoices if total_invoices > 0 else 0
+    total_payments = Payment.objects.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
 
-    return render(request, 'core/sales_summary.html', {
+    avg_invoice = total_sales / total_invoices if total_invoices else 0
+
+    return render(request, 'reports/sales_summary.html', {
         'total_invoices': total_invoices,
         'total_sales': total_sales,
         'total_payments': total_payments,
@@ -80,30 +88,36 @@ def top_products(request):
     items = InvoiceItem.objects.values(
         'product__name'
     ).annotate(
-        qty=Sum('quantity'),
-        revenue=Sum(F('price') * F('quantity'))
-    ).order_by('-qty')
+        total_qty=Sum('quantity'),
+        total_revenue=Sum(F('price') * F('quantity'))
+    ).order_by('-total_qty')
 
-    return render(request, 'core/top_products.html', {
+    return render(request, 'reports/top_products.html', {
         'items': items
     })
 
 
 # ============================
-# CUSTOMER STATEMENT
+# CUSTOMER STATEMENT (SELECT)
 # ============================
-def customer_statement(request):
-    return render(request, 'core/customer_statement.html')
-def customer_statement(request, customer_id):
-    customer = Customer.objects.get(id=customer_id)
+def customer_statement_select(request):
+    customers = Customer.objects.all()
+    return render(request, 'reports/customer_statement_select.html', {
+        'customers': customers
+    })
 
-    # Get invoices and payments sorted by date
+
+# ============================
+# CUSTOMER STATEMENT (DETAIL)
+# ============================
+def customer_statement(request, customer_id):
+    customer = get_object_or_404(Customer, id=customer_id)
+
     events = []
 
     for inv in Invoice.objects.filter(customer=customer):
         events.append({
             'date': inv.date,
-            'type': 'invoice',
             'description': f'Invoice #{inv.id}',
             'amount': inv.total,
         })
@@ -111,15 +125,12 @@ def customer_statement(request, customer_id):
     for pay in Payment.objects.filter(invoice__customer=customer):
         events.append({
             'date': pay.date,
-            'type': 'payment',
             'description': 'Payment',
             'amount': -pay.amount,
         })
 
-    # Sort by date
     events = sorted(events, key=lambda x: x['date'])
 
-    # Running balance
     balance = 0
     history = []
     for e in events:
@@ -131,23 +142,87 @@ def customer_statement(request, customer_id):
             'balance': balance
         })
 
-    return render(request, 'core/customer_statement.html', {
+    return render(request, 'reports/customer_statement.html', {
         'customer': customer,
         'history': history
     })
-def customer_statement(request, customer_id=None):
-    if customer_id is None:
-        customers = Customer.objects.all()
-        return render(request, 'core/customer_statement_select.html', {
-            'customers': customers
+from customers.models import Customer
+
+def customer_statement_select(request):
+    customers = Customer.objects.all()
+    return render(request, 'reports/customer_statement_select.html', {
+        'customers': customers
+    })
+def dashboard(request):
+    return render(request, 'core/dashboard.html')
+from django.shortcuts import render
+
+def dashboard(request):
+    return render(request, 'core/dashboard.html')
+
+
+def core_home(request):
+    return render(request, 'core/core_home.html')
+from django.shortcuts import render
+
+def core_home(request):
+    return render(request, 'core/core_home.html')
+from django.shortcuts import render, get_object_or_404
+from customers.models import Customer
+from invoices.models import Invoice
+from payments.models import Payment
+
+def customer_statement(request, customer_id):
+    customer = get_object_or_404(Customer, id=customer_id)
+
+    entries = []
+
+    # -------------------------
+    # INVOICES → DEBIT
+    # -------------------------
+    invoices = Invoice.objects.filter(customer=customer)
+
+    for inv in invoices:
+        entries.append({
+            'date': inv.date,                 # Invoice date (date)
+            'desc': f'Invoice #{inv.id}',
+            'debit': inv.total,
+            'credit': None,
         })
 
-    customer = Customer.objects.get(id=customer_id)
-    invoices = Invoice.objects.filter(customer=customer)
+    # -------------------------
+    # PAYMENTS → CREDIT
+    # -------------------------
     payments = Payment.objects.filter(invoice__customer=customer)
 
-    return render(request, 'core/customer_statement.html', {
+    for pay in payments:
+        entries.append({
+            'date': pay.date.date(),          # ✅ FIX: datetime → date
+            'desc': 'Payment',
+            'debit': None,
+            'credit': pay.amount,
+        })
+
+    # -------------------------
+    # SORT BY DATE
+    # -------------------------
+    entries.sort(key=lambda x: x['date'])
+
+    # -------------------------
+    # RUNNING BALANCE
+    # -------------------------
+    balance = 0
+    for e in entries:
+        if e['debit']:
+            balance += e['debit']
+        if e['credit']:
+            balance -= e['credit']
+        e['balance'] = balance
+
+    # -------------------------
+    # RENDER
+    # -------------------------
+    return render(request, 'reports/customer_statement.html', {
         'customer': customer,
-        'invoices': invoices,
-        'payments': payments,
+        'entries': entries
     })

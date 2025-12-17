@@ -57,3 +57,81 @@
 
 </body>
 </html>
+<h2>Invoice #{{ invoice.id }}</h2>
+
+<p><b>Customer:</b> {{ invoice.customer.name }}</p>
+<p><b>Date:</b> {{ invoice.date }}</p>
+<p><b>Status:</b> {{ invoice.status }}</p>
+
+<hr>
+
+<table border="1" cellpadding="5">
+<tr>
+  <th>Product</th>
+  <th>Qty</th>
+  <th>Price</th>
+  <th>Total</th>
+</tr>
+
+{% for item in items %}
+<tr>
+  <td>{{ item.product.name }}</td>
+  <td>{{ item.quantity }}</td>
+  <td>{{ item.price }}</td>
+  <td>{{ item.line_total }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<p><b>Subtotal:</b> {{ invoice.subtotal }}</p>
+<p><b>Tax (18%):</b> {{ invoice.tax }}</p>
+<p><b>Grand Total:</b> {{ invoice.total }}</p>
+
+<hr>
+
+<p><b>Paid Amount:</b> {{ total_paid }}</p>
+<p><b>Remaining Balance:</b> {{ balance }}</p>
+
+<a href="{% url 'payment_add' invoice.id %}">➕ Add Payment</a>
+<h2>Invoice #{{ invoice.id }}</h2>
+
+<p><b>Customer:</b> {{ invoice.customer.name }}</p>
+<p><b>Date:</b> {{ invoice.date }}</p>
+<p><b>Status:</b> {{ invoice.status }}</p>
+
+<hr>
+
+<h3>Invoice Items</h3>
+
+<table border="1" cellpadding="5">
+<tr>
+  <th>Product</th>
+  <th>Qty</th>
+  <th>Price</th>
+  <th>Line Total</th>
+</tr>
+
+{% for item in items %}
+<tr>
+  <td>{{ item.product.name }}</td>
+  <td>{{ item.quantity }}</td>
+  <td>{{ item.price }}</td>
+  <td>{{ item.line_total }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<p><b>Subtotal:</b> {{ invoice.subtotal }}</p>
+<p><b>Tax:</b> {{ invoice.tax }}</p>
+<p><b>Grand Total:</b> {{ invoice.total }}</p>
+
+<hr>
+
+<p><b>Paid Amount:</b> {{ total_paid }}</p>
+<p><b>Remaining Balance:</b> {{ balance }}</p>
+
+<a href="{% url 'payment_add' invoice.id %}">➕ Add Payment</a>

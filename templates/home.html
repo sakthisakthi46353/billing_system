@@ -1,20 +1,46 @@
-<h1>Billing System Home</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports Dashboard</title>
+</head>
+<body>
 
-<h2>Customer Management</h2>
+<h1>📊 Reports Dashboard</h1>
+
+<p>Select a report to view:</p>
+
 <ul>
-    <li><a href="/customers/">List Customers</a></li>
-    <li><a href="/customers/add/">Add Customer</a></li>
+    <li>
+        <a href="{% url 'customer_balance' %}">
+            Customer Balance Summary
+        </a>
+    </li>
+
+    <li>
+        <a href="{% url 'sales_summary' %}">
+            Sales Summary
+        </a>
+    </li>
+
+    <li>
+        <a href="{% url 'top_products' %}">
+            Top Selling Products
+        </a>
+    </li>
+
+    <li>
+        <a href="{% url 'customer_statement_select' %}">
+            Customer Statement
+        </a>
+    </li>
 </ul>
 
-<h2>Product Management</h2>
-<ul>
-    <li><a href="/products/">List Products</a></li>
-    <li><a href="/products/add/">Add Product</a></li>
-</ul>
+<hr>
 
-<h2>Invoice Management</h2>
-<ul>
-    <li><a href="/invoices/">List Invoices</a></li>
-    <li><a href="/invoices/create/">Create Invoice</a></li>
-</ul>
+<p>
+    <a href="/">⬅ Back to Dashboard</a>
+</p>
 
+</body>
+</html>

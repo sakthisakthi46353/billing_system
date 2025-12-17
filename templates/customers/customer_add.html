@@ -1,0 +1,10 @@
+<h2>Add Customer</h2>
+
+<form method="post">
+  {% csrf_token %}
+  Name: <input type="text" name="name"><br><br>
+  Phone: <input type="text" name="phone"><br><br>
+  <button type="submit">Save</button>
+</form>
+
+<a href="/customers/">Back</a>

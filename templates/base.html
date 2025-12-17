@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Billing System{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<h1>Billing System Dashboard</h1>
+
+<nav>
+  <a href="/">Dashboard</a> |
+  <a href="/customers/">Customers</a> |
+  <a href="/products/">Products</a> |
+  <a href="/invoices/">Invoices</a> |
+  <a href="/payments/">Payments</a> |
+  <a href="/reports/">📊 Reports</a> |
+  <a href="/core/">Core</a>
+</nav>
+
+<hr>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>
