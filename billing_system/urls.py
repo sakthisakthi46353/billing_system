@@ -1,19 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
+from core.views import dashboard   # 👈 IMPORTANT
 
 urlpatterns = [
-    # ADMIN
     path('admin/', admin.site.urls),
 
-    # DASHBOARD / HOME (core)
-    path('', include('core.urls')),
+    # ✅ ROOT DASHBOARD (ONLY THIS)
+    path('', dashboard, name='dashboard'),
 
-    # APP MODULES
     path('customers/', include('customers.urls')),
     path('products/', include('products.urls')),
     path('invoices/', include('invoices.urls')),
     path('payments/', include('payments.urls')),
-
-    # REPORTS MODULE
     path('reports/', include('reports.urls')),
 ]

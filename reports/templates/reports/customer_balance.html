@@ -1,36 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Customer Balance Summary</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h2>Customer Balance Summary</h2>
+{% block title %}Customer Balance Summary{% endblock %}
 
-<table border="1" cellpadding="5">
-    <tr>
+{% block content %}
+<div class="card">
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>Customer Balance Summary</h2>
+    <a href="{% url 'reports_home' %}" class="btn secondary">← Back to Reports</a>
+  </div>
+
+  <table class="table" style="margin-top:16px; width:100%;">
+    <thead>
+      <tr>
         <th>Customer</th>
         <th>Total Invoiced</th>
         <th>Total Paid</th>
         <th>Balance</th>
-    </tr>
-
-    {% for row in report %}
-    <tr>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in report %}
+      <tr>
         <td>{{ row.customer.name }}</td>
-        <td>{{ row.total_invoiced }}</td>
-        <td>{{ row.total_paid }}</td>
-        <td>{{ row.balance }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">No data</td>
-    </tr>
-    {% endfor %}
-</table>
+        <td>{{ row.invoice_total }}</td>
+        <td>{{ row.paid_total }}</td>
+        <td
+          {% if row.balance < 0 %}
+            style="color:red; font-weight:bold;"
+          {% elif row.balance > 0 %}
+            style="color:green; font-weight:bold;"
+          {% endif %}
+        >
+          {{ row.balance }}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" style="text-align:center;">
+          No data available
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-<br>
-<a href="{% url 'reports_home' %}">⬅ Back to Reports</a>
-
-</body>
-</html>
+</div>
+{% endblock %}

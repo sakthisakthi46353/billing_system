@@ -1,56 +1,36 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Payment</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>💰 Add Payment</h1>
+{% block title %}Add Payment{% endblock %}
 
-<h3>Invoice Information</h3>
+{% block content %}
 
-<table border="1" cellpadding="10">
-    <tr>
-        <th>Invoice ID</th>
-        <td>{{ invoice.id }}</td>
-    </tr>
-    <tr>
-        <th>Customer</th>
-        <td>{{ invoice.customer.name }}</td>
-    </tr>
-    <tr>
-        <th>Total Amount</th>
-        <td>{{ invoice.total }}</td>
-    </tr>
-    <tr>
-        <th>Paid So Far</th>
-        <td>{{ invoice.paid_amount }}</td>
-    </tr>
-    <tr>
-        <th>Balance</th>
-        <td>{{ invoice.balance }}</td>
-    </tr>
-    <tr>
-        <th>Status</th>
-        <td>{{ invoice.status }}</td>
-    </tr>
-</table>
+<h2>Add Payment</h2>
 
-<br><hr><br>
-
-<h3>Enter Payment Amount</h3>
+{% if error %}
+    <p style="color:red">{{ error }}</p>
+{% endif %}
 
 <form method="post">
     {% csrf_token %}
 
-    <label>Amount:</label>
-    <input type="number" step="0.01" name="amount" required>
+    <p>
+        <label>Invoice:</label><br>
+        <select name="invoice" required>
+            <option value="">-- Select Invoice --</option>
+            {% for inv in invoices %}
+                <option value="{{ inv.id }}">
+                    Invoice #{{ inv.id }} - {{ inv.customer.name }} ({{ inv.total }})
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p>
+        <label>Amount:</label><br>
+        <input type="number" name="amount" step="0.01" required>
+    </p>
 
     <button type="submit">Save Payment</button>
 </form>
 
-<br>
-<a href="/">⬅ Back to Dashboard</a>
-
-</body>
-</html>
+{% endblock %}

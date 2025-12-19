@@ -1,6 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+
 <h2>Payments</h2>
 
-<table border="1">
+<p>
+    <a href="{% url 'payment_add' %}">➕ Add Payment</a>
+</p>
+
+<table border="1" cellpadding="5">
     <tr>
         <th>ID</th>
         <th>Invoice</th>
@@ -18,11 +28,14 @@
         <td>{{ p.amount }}</td>
         <td>{{ p.date }}</td>
         <td>
-            <a href="/payments/{{ p.invoice.id }}/history/">History</a>
+            <a href="{% url 'payment_history' p.invoice.id %}">History</a>
         </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No payments found</td>
     </tr>
     {% endfor %}
 </table>
 
-<br>
-<a href="/">← Back to Dashboard</a>
+{% endblock %}

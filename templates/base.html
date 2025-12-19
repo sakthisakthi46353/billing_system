@@ -1,29 +1,102 @@
-{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}Billing System{% endblock %}</title>
+<meta charset="UTF-8">
+<title>{% block title %}Billing System{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+<style>
+body{
+  margin:0;
+  font-family:system-ui,Segoe UI,Roboto;
+  background:#f5f7fb;
+  color:#1f2937;
+}
+header{
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+}
+.header-inner{
+  max-width:1200px;
+  margin:0 auto;
+  padding:16px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.brand{
+  font-size:20px;
+  font-weight:700;
+}
+nav a{
+  margin-left:16px;
+  text-decoration:none;
+  color:#6b7280;
+  font-weight:500;
+}
+nav a:hover{color:#2563eb}
+
+.container{
+  max-width:1200px;
+  margin:32px auto;
+  padding:0 24px;
+}
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:24px;
+  box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+.btn{
+  background:#2563eb;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:600;
+  display:inline-block;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #e5e7eb;
+}
+th{
+  text-align:left;
+  color:#6b7280;
+  background:#f9fafb;
+}
+.actions a{
+  margin-right:10px;
+  font-weight:600;
+}
+.actions .delete{color:#dc2626}
+</style>
 </head>
+
 <body>
 
-<h1>Billing System Dashboard</h1>
+<header>
+  <div class="header-inner">
+    <div class="brand">Billing System</div>
+    <nav>
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'customer_list' %}">Customers</a>
+      <a href="{% url 'products:product_list' %}">Products</a>
+      <a href="{% url 'invoice_list' %}">Invoices</a>
+      <a href="{% url 'payment_list' %}">Payments</a>
+      <a href="{% url 'reports_home' %}">Reports</a>
+    </nav>
+  </div>
+</header>
 
-<nav>
-  <a href="/">Dashboard</a> |
-  <a href="/customers/">Customers</a> |
-  <a href="/products/">Products</a> |
-  <a href="/invoices/">Invoices</a> |
-  <a href="/payments/">Payments</a> |
-  <a href="/reports/">📊 Reports</a> |
-  <a href="/core/">Core</a>
-</nav>
-
-<hr>
-
-{% block content %}{% endblock %}
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
 
 </body>
 </html>

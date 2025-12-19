@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Add Invoice</title>
+    <meta charset="utf-8">
 </head>
 <body>
 
@@ -10,43 +11,95 @@
 <form method="post">
     {% csrf_token %}
 
-    <!-- Customer dropdown -->
-    <label><strong>Customer:</strong></label>
-    <select name="customer" required>
-        <option value="">-- Select Customer --</option>
-        {% for c in customers %}
-            <option value="{{ c.id }}">{{ c.name }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
+    <!-- ===================== -->
+    <!-- CUSTOMER -->
+    <!-- ===================== -->
+    <p>
+        <label><strong>Customer:</strong></label><br>
+        <select name="customer" required>
+            <option value="">-- Select Customer --</option>
+            {% for c in customers %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </p>
 
+    <hr>
 
-    <h3>Items</h3>
-    <p>You can add up to 3 products in one invoice.</p>
+    <!-- ===================== -->
+    <!-- ITEMS -->
+    <!-- ===================== -->
+    <h3>Invoice Items</h3>
+    <p>You can add up to 3 products</p>
 
-    <!-- 3 product rows -->
-    {% for i in "123" %}
+    <!-- ITEM 1 -->
     <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
-        
+        <strong>Item 1</strong><br>
+
         <label>Product:</label>
-        <select name="product">
+        <select name="product_1">
             <option value="">-- Select Product --</option>
             {% for p in products %}
-            <option value="{{ p.id }}">
-                {{ p.name }} (Stock: {{ p.stock }}, ₹{{ p.price }})
-            </option>
+                <option value="{{ p.id }}">
+                    {{ p.name }} (₹{{ p.price }}, Stock: {{ p.stock }})
+                </option>
             {% endfor %}
         </select>
 
         <label>Qty:</label>
-        <input type="number" name="quantity" min="1">
+        <input type="number" name="qty_1" min="1">
     </div>
-    {% endfor %}
+
+    <!-- ITEM 2 -->
+    <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+        <strong>Item 2</strong><br>
+
+        <label>Product:</label>
+        <select name="product_2">
+            <option value="">-- Select Product --</option>
+            {% for p in products %}
+                <option value="{{ p.id }}">
+                    {{ p.name }} (₹{{ p.price }}, Stock: {{ p.stock }})
+                </option>
+            {% endfor %}
+        </select>
+
+        <label>Qty:</label>
+        <input type="number" name="qty_2" min="1">
+    </div>
+
+    <!-- ITEM 3 -->
+    <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+        <strong>Item 3</strong><br>
+
+        <label>Product:</label>
+        <select name="product_3">
+            <option value="">-- Select Product --</option>
+            {% for p in products %}
+                <option value="{{ p.id }}">
+                    {{ p.name }} (₹{{ p.price }}, Stock: {{ p.stock }})
+                </option>
+            {% endfor %}
+        </select>
+
+        <label>Qty:</label>
+        <input type="number" name="qty_3" min="1">
+    </div>
 
     <br>
-    <button type="submit">Save Invoice</button>
+
+    <!-- ACTIONS -->
+    <button type="submit">💾 Save Invoice</button>
+    &nbsp;&nbsp;
+    <a href="{% url 'invoice_list' %}">← Back to Invoices</a>
 
 </form>
+
+{% if messages %}
+    {% for message in messages %}
+        <p style="color:red">{{ message }}</p>
+    {% endfor %}
+{% endif %}
 
 </body>
 </html>

@@ -1,10 +1,26 @@
-<h2>Add Customer</h2>
+{% extends "base.html" %}
+{% block title %}Add Customer{% endblock %}
 
-<form method="post">
-  {% csrf_token %}
-  Name: <input type="text" name="name"><br><br>
-  Phone: <input type="text" name="phone"><br><br>
-  <button type="submit">Save</button>
-</form>
+{% block content %}
+<div class="card" style="max-width:500px;margin:auto">
+  <h2>Add Customer</h2>
 
-<a href="/customers/">Back</a>
+  <form method="post">
+    {% csrf_token %}
+
+    <label>Name</label><br>
+    <input name="name" required style="width:100%;padding:10px"><br><br>
+
+    <label>Email</label><br>
+    <input name="email" style="width:100%;padding:10px"><br><br>
+
+    <label>Phone</label><br>
+    <input name="phone" style="width:100%;padding:10px"><br><br>
+
+    <label>Address</label><br>
+    <textarea name="address" rows="3" style="width:100%;padding:10px"></textarea><br><br>
+
+    <button class="btn" type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

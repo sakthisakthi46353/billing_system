@@ -1,23 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Reports Dashboard</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>📊 Reports Dashboard</h1>
+{% block title %}Reports{% endblock %}
 
-<ul>
-    <li><a href="{% url 'customer_balance' %}">Customer Balance Summary</a></li>
-    <li><a href="{% url 'sales_summary' %}">Sales Summary</a></li>
-    <li><a href="{% url 'top_products' %}">Top Selling Products</a></li>
-    <li><a href="{% url 'customer_statement_select' %}">Customer Statement</a></li>
-</ul>
+{% block content %}
+<div class="card">
 
-<hr>
+  <!-- HEADER -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span style="font-size:28px;">📊</span>
+    <h2 style="margin:0;">Reports Dashboard</h2>
+  </div>
 
-<a href="/">⬅ Back to Dashboard</a>
+  <p style="margin-top:8px; color:#666;">
+    View business summaries and analytics reports
+  </p>
 
-</body>
-</html>
+  <!-- REPORT LINKS -->
+  <ul style="margin-top:20px; line-height:2; font-size:16px;">
+
+    <li>
+      <a href="{% url 'customer_balance' %}">
+        Customer Balance Summary
+      </a>
+    </li>
+
+    <li>
+      <a href="{% url 'sales_summary' %}">
+        Sales Summary
+      </a>
+    </li>
+
+    <li>
+      <a href="{% url 'top_products' %}">
+        Top Selling Products
+      </a>
+    </li>
+
+    <li>
+      <a href="{% url 'customer_statement_select' %}">
+        Customer Statement
+      </a>
+    </li>
+
+  </ul>
+
+</div>
+{% endblock %}

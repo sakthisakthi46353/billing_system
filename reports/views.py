@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Sum, F
-from datetime import date
 
 from customers.models import Customer
 from invoices.models import Invoice, InvoiceItem
@@ -11,13 +10,13 @@ from payments.models import Payment
 # REPORTS HOME PAGE
 # =========================
 def reports_home(request):
-    return render(request, 'reports/home.html')
+    return render(request, 'reports/reports_home.html')
 
 
 # =========================
 # CUSTOMER BALANCE SUMMARY
 # =========================
-def customer_balance_report(request):
+def customer_balance(request):
     report_data = []
 
     customers = Customer.objects.all()
@@ -48,7 +47,7 @@ def customer_balance_report(request):
 # =========================
 # SALES SUMMARY REPORT
 # =========================
-def sales_summary_report(request):
+def sales_summary(request):
     total_invoices = Invoice.objects.count()
 
     total_sales = Invoice.objects.aggregate(
@@ -69,8 +68,8 @@ def sales_summary_report(request):
 # =========================
 # TOP SELLING PRODUCTS
 # =========================
-def top_selling_products(request):
-    products = (
+def top_products(request):
+    items = (
         InvoiceItem.objects
         .values('product__name')
         .annotate(
@@ -81,12 +80,12 @@ def top_selling_products(request):
     )
 
     return render(request, 'reports/top_products.html', {
-        'products': products
+        'items': items
     })
 
 
 # =========================
-# CUSTOMER STATEMENT - SELECT
+# CUSTOMER STATEMENT - SELECT CUSTOMER
 # =========================
 def customer_statement_select(request):
     customers = Customer.objects.all()
@@ -109,7 +108,7 @@ def customer_statement(request, customer_id):
     # INVOICES → Debit
     for inv in invoices:
         entries.append({
-            'date': inv.date,                  # date
+            'date': inv.date,
             'desc': f'Invoice #{inv.id}',
             'debit': inv.total,
             'credit': None
@@ -118,7 +117,7 @@ def customer_statement(request, customer_id):
     # PAYMENTS → Credit
     for pay in payments:
         entries.append({
-            'date': pay.date.date(),           # 🔥 FIX: datetime → date
+            'date': pay.date.date(),
             'desc': 'Payment',
             'debit': None,
             'credit': pay.amount
@@ -139,22 +138,4 @@ def customer_statement(request, customer_id):
     return render(request, 'reports/customer_statement.html', {
         'customer': customer,
         'entries': entries
-    })
-from django.db.models import Sum, F
-from invoices.models import InvoiceItem
-from django.shortcuts import render
-
-def top_products(request):
-    items = (
-        InvoiceItem.objects
-        .values('product__name')
-        .annotate(
-            total_qty=Sum('quantity'),
-            total_revenue=Sum(F('quantity') * F('price'))
-        )
-        .order_by('-total_qty')
-    )
-
-    return render(request, 'reports/top_products.html', {
-        'items': items
     })
