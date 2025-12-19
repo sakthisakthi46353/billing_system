@@ -1,40 +1,50 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Product{% endblock %}
+{% block title %}Add Product{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:600px;">
 
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2>Edit Product</h2>
-    <a href="{% url 'product_list' %}" class="btn secondary">
-      ← Back
-    </a>
+<div class="container mt-4">
+  <div class="card shadow-sm" style="max-width:600px;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Add Product</h2>
+        <a href="{% url 'products:product_list' %}" class="btn btn-secondary">
+          ← Back
+        </a>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Price</label>
+          <input type="number" step="0.01" name="price" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Stock</label>
+          <input type="number" name="stock" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          Save
+        </button>
+
+        <a href="{% url 'products:product_list' %}" class="btn btn-secondary ms-2">
+          Cancel
+        </a>
+
+      </form>
+
+    </div>
   </div>
-
-  <form method="post" style="margin-top:20px;">
-    {% csrf_token %}
-
-    <div style="margin-bottom:12px;">
-      <label>Name</label><br>
-      <input type="text" name="name" value="{{ product.name }}" required>
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label>Price</label><br>
-      <input type="number" step="0.01" name="price" value="{{ product.price }}" required>
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label>Stock</label><br>
-      <input type="number" name="stock" value="{{ product.stock }}" required>
-    </div>
-
-    <button type="submit" class="btn">Update</button>
-    <a href="{% url 'product_list' %}" class="btn secondary">Cancel</a>
-
-  </form>
-
 </div>
+
 {% endblock %}
- 
