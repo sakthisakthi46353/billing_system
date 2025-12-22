@@ -6,8 +6,8 @@ from .models import Product
 # ======================
 def product_list(request):
     products = Product.objects.all()
-    return render(request, 'products/product_list.html', {
-        'products': products
+    return render(request, "products/product_list.html", {
+        "products": products
     })
 
 
@@ -17,13 +17,23 @@ def product_list(request):
 def product_add(request):
     if request.method == "POST":
         Product.objects.create(
-            name=request.POST.get('name'),
-            price=request.POST.get('price'),
-            stock=request.POST.get('stock')
+            name=request.POST.get("name"),
+            price=request.POST.get("price"),
+            stock=request.POST.get("stock"),
         )
-        return redirect('product_list')
+        return redirect("products:product_list")
 
-    return render(request, 'products/product_add.html')
+    return render(request, "products/product_add.html")
+
+
+# ======================
+# VIEW PRODUCT
+# ======================
+def product_view(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, "products/product_view.html", {
+        "product": product
+    })
 
 
 # ======================
@@ -33,14 +43,14 @@ def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == "POST":
-        product.name = request.POST.get('name')
-        product.price = request.POST.get('price')
-        product.stock = request.POST.get('stock')
+        product.name = request.POST.get("name")
+        product.price = request.POST.get("price")
+        product.stock = request.POST.get("stock")
         product.save()
-        return redirect('product_list')
+        return redirect("products:product_list")
 
-    return render(request, 'products/product_edit.html', {
-        'product': product
+    return render(request, "products/product_edit.html", {
+        "product": product
     })
 
 
@@ -50,10 +60,4 @@ def product_edit(request, pk):
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.delete()
-    return redirect('product_list')
-    
-def product_view(request, pk):
-    product = Product.objects.get(id=pk)
-    return render(request, "products/product_view.html", {
-        "product": product
-    })
+    return redirect("products:product_list")

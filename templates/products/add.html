@@ -1,10 +1,142 @@
-<h1>Add Product</h1>
+{% extends "base.html" %}
+{% block content %}
 
-<form method="POST">
-    {% csrf_token %}
-    Name: <input name="name"><br><br>
-    Price: <input name="price"><br><br>
-    Stock: <input name="stock"><br><br>
-    <button type="submit">Save</button>
-</form>
+<style>
+/* ===== Page Layout ===== */
+.add-product-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+}
 
+/* ===== Card ===== */
+.add-product-card {
+  width: 420px;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+/* ===== Header ===== */
+.add-product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.add-product-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.back-btn {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* ===== Form ===== */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+}
+
+/* ===== Buttons ===== */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.btn-save {
+  flex: 1;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save:hover {
+  background: #0056b3;
+}
+
+.btn-cancel {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  background: #e0e0e0;
+  text-decoration: none;
+  color: #000;
+  font-weight: 600;
+}
+
+.btn-cancel:hover {
+  background: #cfcfcf;
+}
+</style>
+
+<div class="add-product-container">
+  <div class="add-product-card">
+
+    <div class="add-product-header">
+<a href="{% url 'products:product_list' %}">Back</a>
+
+      <h2>Add Product</h2>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label>Product Name</label>
+        <input type="text" name="name" placeholder="Enter product name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Price (₹)</label>
+        <input type="number" name="price" step="0.01" placeholder="0.00" required>
+      </div>
+
+      <div class="form-group">
+        <label>Stock Quantity</label>
+        <input type="number" name="stock" placeholder="0" required>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Save Product</button>
+<a href="{% url 'products:product_list' %}">Cancel</a>
+
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

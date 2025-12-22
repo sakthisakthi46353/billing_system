@@ -15,14 +15,14 @@ from payments.models import Payment
 # LIST INVOICES
 # ================================
 def invoice_list(request):
-    invoices = Invoice.objects.select_related('customer').all()
-    return render(request, 'invoices/invoice_list.html', {
-        'invoices': invoices
+    invoices = Invoice.objects.select_related("customer").all()
+    return render(request, "invoices/invoice_list.html", {
+        "invoices": invoices
     })
 
 
 # ================================
-# ADD NEW INVOICE
+# ADD NEW INVOICE (DYNAMIC ROWS)
 # ================================
 @transaction.atomic
 def invoice_add(request):
@@ -33,31 +33,35 @@ def invoice_add(request):
         customer_id = request.POST.get("customer")
 
         if not customer_id:
-            messages.error(request, "Please select customer")
-            return redirect("invoice_add")
+            messages.error(request, "Please select a customer")
+            return redirect("invoices:invoice_add")
 
         customer = get_object_or_404(Customer, id=customer_id)
 
+        # ✅ create invoice (totals calculated dynamically in view)
         invoice = Invoice.objects.create(
             customer=customer,
-            total=Decimal("0.00"),
             status="UNPAID"
         )
 
-        grand_total = Decimal("0.00")
+        has_item = False
 
-        for i in range(1, 4):
-            product_id = request.POST.get(f"product_{i}")
-            qty = request.POST.get(f"qty_{i}")
+        product_ids = request.POST.getlist("product")
+        quantities = request.POST.getlist("quantity")
+        prices = request.POST.getlist("unit_price")
+        tax_percents = request.POST.getlist("tax_percent")
+        discount_types = request.POST.getlist("discount_type")
+        discount_values = request.POST.getlist("discount_value")
 
-            if not product_id or not qty:
+        for i in range(len(product_ids)):
+            if not product_ids[i]:
                 continue
 
-            qty = int(qty)
+            qty = int(quantities[i])
             if qty <= 0:
                 continue
 
-            product = get_object_or_404(Product, id=product_id)
+            product = get_object_or_404(Product, id=product_ids[i])
 
             if product.stock < qty:
                 messages.error(
@@ -66,29 +70,28 @@ def invoice_add(request):
                 )
                 raise transaction.TransactionManagementError("Stock error")
 
-            line_total = product.price * qty
-            grand_total += line_total
-
             InvoiceItem.objects.create(
                 invoice=invoice,
                 product=product,
                 quantity=qty,
-                price=product.price
+                unit_price=Decimal(prices[i]),
+                tax_percent=Decimal(tax_percents[i]),
+                discount_type=discount_types[i],
+                discount_value=Decimal(discount_values[i]),
             )
 
             product.stock -= qty
             product.save()
 
-        if grand_total == 0:
-            messages.error(request, "Please add at least one product")
+            has_item = True
+
+        if not has_item:
             invoice.delete()
-            return redirect("invoice_add")
+            messages.error(request, "Please add at least one item")
+            return redirect("invoices:invoice_add")
 
-        invoice.total = grand_total
-        invoice.save()
-
-        messages.success(request, "Invoice saved successfully")
-        return redirect("invoice_list")
+        messages.success(request, "Invoice created successfully")
+        return redirect("invoices:invoice_list")
 
     return render(request, "invoices/invoice_add.html", {
         "customers": customers,
@@ -101,88 +104,46 @@ def invoice_add(request):
 # ================================
 def invoice_view(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
-
     items = invoice.items.all()
-    total_paid = invoice.payments.aggregate(
-        total=Sum('amount')
-    )['total'] or Decimal("0.00")
 
-    balance = invoice.total - total_paid
+    subtotal = Decimal("0.00")
+    total_discount = Decimal("0.00")
+    total_tax = Decimal("0.00")
 
-    return render(request, 'invoices/invoice_view.html', {
-        'invoice': invoice,
-        'items': items,
-        'total_paid': total_paid,
-        'balance': balance
+    for item in items:
+        base = item.unit_price * item.quantity
+
+        if item.discount_type == "percent":
+            discount = base * (item.discount_value / Decimal("100"))
+        else:
+            discount = item.discount_value
+
+        taxable = base - discount
+        tax = taxable * (item.tax_percent / Decimal("100"))
+
+        subtotal += base
+        total_discount += discount
+        total_tax += tax
+
+    grand_total = subtotal - total_discount + total_tax
+
+    # ✅ FIXED HERE
+    paid = Payment.objects.filter(
+        invoice=invoice
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+    balance = grand_total - paid
+
+    return render(request, "invoices/invoice_view.html", {
+        "invoice": invoice,
+        "items": items,
+        "subtotal": subtotal,
+        "total_discount": total_discount,
+        "total_tax": total_tax,
+        "grand_total": grand_total,
+        "paid": paid,
+        "balance": balance,
     })
-
-
-# ================================
-# EDIT INVOICE
-# ================================
-@transaction.atomic
-@transaction.atomic
-def invoice_edit(request, pk):
-    invoice = get_object_or_404(Invoice, pk=pk)
-    products = Product.objects.all()
-    customers = Customer.objects.all()
-
-    if request.method == "POST":
-        # update customer
-        invoice.customer_id = request.POST.get("customer")
-
-        # restore stock
-        for item in invoice.items.all():
-            item.product.stock += item.quantity
-            item.product.save()
-
-        invoice.items.all().delete()
-
-        grand_total = Decimal("0.00")
-
-        product_ids = request.POST.getlist("product")
-        quantities = request.POST.getlist("quantity")
-
-        for prod_id, qty_str in zip(product_ids, quantities):
-            if not prod_id or not qty_str:
-                continue
-
-            qty = int(qty_str)
-            if qty <= 0:
-                continue
-
-            product = get_object_or_404(Product, id=prod_id)
-
-            if product.stock < qty:
-                messages.error(request, f"Not enough stock for {product.name}")
-                raise transaction.TransactionManagementError("Stock error")
-
-            line_total = product.price * qty
-            grand_total += line_total
-
-            InvoiceItem.objects.create(
-                invoice=invoice,
-                product=product,
-                quantity=qty,
-                price=product.price
-            )
-
-            product.stock -= qty
-            product.save()
-
-        invoice.total = grand_total
-        invoice.save()
-
-        messages.success(request, "Invoice updated successfully")
-        return redirect('invoice_view', pk=invoice.id)
-
-    return render(request, 'invoices/invoice_edit.html', {
-        'invoice': invoice,
-        'items': invoice.items.all(),
-        'products': products,
-        'customers': customers
-    })
-
 
 # ================================
 # DELETE INVOICE
@@ -200,4 +161,164 @@ def invoice_delete(request, pk):
 
     invoice.delete()
     messages.error(request, "Invoice deleted")
-    return redirect('invoice_list')
+    return redirect("invoices:invoice_list")
+
+from decimal import Decimal
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.db.models import Sum
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+import os
+
+from .models import Invoice
+from payments.models import Payment
+
+
+def invoice_pdf(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    items = invoice.items.all()
+
+    # -----------------------------
+    # PDF RESPONSE
+    # -----------------------------
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="Invoice_{invoice.id}.pdf"'
+
+    c = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+
+    # -----------------------------
+    # FONT (₹ SUPPORT)
+    # -----------------------------
+    font_path = os.path.join(settings.BASE_DIR, "static", "fonts", "DejaVuSans.ttf")
+    pdfmetrics.registerFont(TTFont("DejaVu", font_path))
+    c.setFont("DejaVu", 11)
+
+    # -----------------------------
+    # LOGO
+    # -----------------------------
+    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
+    if os.path.exists(logo_path):
+        c.drawImage(
+            logo_path,
+            40, height - 80,
+            width=120,
+            height=50,
+            preserveAspectRatio=True,
+            mask="auto"
+        )
+
+    # -----------------------------
+    # HEADER
+    # -----------------------------
+    c.setFont("DejaVu", 18)
+    c.drawRightString(width - 40, height - 50, "INVOICE")
+
+    c.setFont("DejaVu", 11)
+    c.drawRightString(width - 40, height - 80, f"Invoice No: {invoice.id}")
+    c.drawRightString(width - 40, height - 100, f"Date: {invoice.date}")
+
+    # -----------------------------
+    # CUSTOMER DETAILS
+    # -----------------------------
+    y = height - 140
+    c.drawString(40, y, "Bill To:")
+    c.drawString(40, y - 20, invoice.customer.name)
+    c.drawString(40, y - 40, f"Status: {invoice.status}")
+
+    # -----------------------------
+    # TABLE HEADER
+    # -----------------------------
+    y -= 80
+    c.line(40, y, width - 40, y)
+    y -= 20
+
+    c.drawString(40, y, "Product")
+    c.drawString(260, y, "Qty")
+    c.drawString(320, y, "Unit Price")
+    c.drawRightString(width - 40, y, "Line Total")
+
+    y -= 10
+    c.line(40, y, width - 40, y)
+    y -= 25
+
+    # -----------------------------
+    # TABLE ROWS
+    # -----------------------------
+    subtotal = Decimal("0.00")
+    total_discount = Decimal("0.00")
+    total_tax = Decimal("0.00")
+
+    for item in items:
+        base = item.unit_price * item.quantity
+
+        if item.discount_type == "percent":
+            discount = base * (item.discount_value / Decimal("100"))
+        else:
+            discount = item.discount_value
+
+        taxable = base - discount
+        tax = taxable * (item.tax_percent / Decimal("100"))
+        line_total = taxable + tax
+
+        subtotal += base
+        total_discount += discount
+        total_tax += tax
+
+        c.drawString(40, y, item.product.name)
+        c.drawString(260, y, str(item.quantity))
+        c.drawString(320, y, f"₹ {item.unit_price:.2f}")
+        c.drawRightString(width - 40, y, f"₹ {line_total:.2f}")
+
+        y -= 25
+
+    # -----------------------------
+    # TOTALS
+    # -----------------------------
+    grand_total = subtotal - total_discount + total_tax
+
+    paid = Payment.objects.filter(
+        invoice=invoice
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+    balance = grand_total - paid
+
+    y -= 20
+    c.line(300, y, width - 40, y)
+    y -= 20
+
+    c.drawRightString(420, y, "Subtotal:")
+    c.drawRightString(width - 40, y, f"₹ {subtotal:.2f}")
+
+    y -= 20
+    c.drawRightString(420, y, "Discount:")
+    c.drawRightString(width - 40, y, f"₹ {total_discount:.2f}")
+
+    y -= 20
+    c.drawRightString(420, y, "Tax:")
+    c.drawRightString(width - 40, y, f"₹ {total_tax:.2f}")
+
+    y -= 25
+    c.setFont("DejaVu", 12)
+    c.drawRightString(420, y, "Grand Total:")
+    c.drawRightString(width - 40, y, f"₹ {grand_total:.2f}")
+
+    y -= 25
+    c.setFont("DejaVu", 11)
+    c.drawRightString(420, y, "Paid:")
+    c.drawRightString(width - 40, y, f"₹ {paid:.2f}")
+
+    y -= 20
+    c.drawRightString(420, y, "Balance:")
+    c.drawRightString(width - 40, y, f"₹ {balance:.2f}")
+
+    c.showPage()
+    c.save()
+
+    return response

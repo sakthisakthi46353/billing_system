@@ -4,38 +4,66 @@
 
 {% block content %}
 
-<h2>Payments</h2>
+<div class="card shadow-sm">
+  <div class="card-body">
 
-<p>
-    <a href="{% url 'payment_add' %}">➕ Add Payment</a>
-</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Payments</h2>
 
-<table border="1" cellpadding="5">
-    <tr>
-        <th>ID</th>
-        <th>Invoice</th>
-        <th>Customer</th>
-        <th>Amount</th>
-        <th>Date</th>
-        <th>Action</th>
-    </tr>
+      <a href="{% url 'payments:payment_add' %}" class="btn btn-success">
+        ➕ Add Payment
+      </a>
+    </div>
 
-    {% for p in payments %}
-    <tr>
-        <td>{{ p.id }}</td>
-        <td>{{ p.invoice.id }}</td>
-        <td>{{ p.invoice.customer.name }}</td>
-        <td>{{ p.amount }}</td>
-        <td>{{ p.date }}</td>
-        <td>
-            <a href="{% url 'payment_history' p.invoice.id %}">History</a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No payments found</td>
-    </tr>
-    {% endfor %}
-</table>
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Amount (₹)</th>
+          <th>Date</th>
+          <th style="width:220px">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.id }}</td>
+
+          <td>{{ p.invoice.customer.name }}</td>
+
+          <td>₹ {{ p.amount }}</td>
+
+          <td>{{ p.date|date:"d M Y" }}</td>
+
+          <td class="actions">
+            <a href="{% url 'payments:payment_edit' p.id %}">
+              Edit
+            </a>
+            |
+            <a href="{% url 'payments:payment_delete' p.id %}"
+               onclick="return confirm('Delete this payment?')"
+               class="text-danger">
+              Delete
+            </a>
+            |
+            <a href="{% url 'payments:payment_history' p.invoice.id %}">
+              History
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted">
+            No payments found
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</div>
 
 {% endblock %}

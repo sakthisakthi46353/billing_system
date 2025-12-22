@@ -6,93 +6,72 @@ from products.models import Product
 
 class Invoice(models.Model):
     STATUS_CHOICES = [
-        ('UNPAID', 'Unpaid'),
-        ('PARTIALLY_PAID', 'Partially Paid'),
-        ('PAID', 'Paid'),
+        ("UNPAID", "Unpaid"),
+        ("PARTIALLY_PAID", "Partially Paid"),
+        ("PAID", "Paid"),
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20)
-
-    subtotal = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
-    )
-    tax = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
-    )
-    total = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
-    )
-
     status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='UNPAID'
+        max_length=20, choices=STATUS_CHOICES, default="UNPAID"
     )
 
     def __str__(self):
-        return f"Invoice #{self.id} - {self.customer.name}"
+        return f"Invoice #{self.id}"
 
-    # ----------------------
-    # Total paid amount
-    # ----------------------
+    # ✅ ADD THIS (VERY IMPORTANT)
     @property
-    def paid_amount(self):
-        return sum(
-            (payment.amount for payment in self.payments.all()),
-            Decimal('0.00')
-        )
+    def total(self):
+        """
+        Sum of all invoice item line totals
+        """
+        total = Decimal("0.00")
 
-    # ----------------------
-    # Remaining balance
-    # ----------------------
-    @property
-    def balance(self):
-        return self.total - self.paid_amount
+        for item in self.items.all():
+            total += item.line_total
 
-    # ----------------------
-    # Update invoice status
-    # ----------------------
-    def update_status(self):
-        if self.paid_amount <= 0:
-            self.status = 'UNPAID'
-        elif self.paid_amount < self.total:
-            self.status = 'PARTIALLY_PAID'
-        else:
-            self.status = 'PAID'
-        self.save()
+        return total
 
 
 class InvoiceItem(models.Model):
+    DISCOUNT_CHOICES = [
+        ("percent", "%"),
+        ("amount", "₹"),
+    ]
+
     invoice = models.ForeignKey(
-        Invoice,
-        related_name='items',
-        on_delete=models.CASCADE
+        Invoice, related_name="items", on_delete=models.CASCADE
     )
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.PROTECT
-    )
-    quantity = models.PositiveIntegerField()
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+
+    quantity = models.PositiveIntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    tax_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0.00")
     )
 
-    # ----------------------
-    # Line total (price × qty)
-    # ----------------------
+    discount_type = models.CharField(
+        max_length=10, choices=DISCOUNT_CHOICES, default="percent"
+    )
+    discount_value = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+
     @property
     def line_total(self):
-        return self.price * self.quantity
+        """
+        unit_price × qty − discount + tax
+        """
+        base = self.unit_price * self.quantity
 
-    def __str__(self):
-        return f"{self.product.name} x {self.quantity}"
+        if self.discount_type == "percent":
+            discount = base * (self.discount_value / Decimal("100"))
+        else:
+            discount = self.discount_value
+
+        taxable = base - discount
+        tax = taxable * (self.tax_percent / Decimal("100"))
+
+        return taxable + tax

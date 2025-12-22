@@ -1,36 +1,72 @@
 {% extends "base.html" %}
-
 {% block title %}Add Payment{% endblock %}
 
 {% block content %}
 
-<h2>Add Payment</h2>
+<div class="card shadow-sm p-4">
 
-{% if error %}
-    <p style="color:red">{{ error }}</p>
-{% endif %}
+  <h3 class="mb-4">Add Payment</h3>
 
-<form method="post">
+  <form method="post">
     {% csrf_token %}
 
-    <p>
-        <label>Invoice:</label><br>
-        <select name="invoice" required>
-            <option value="">-- Select Invoice --</option>
-            {% for inv in invoices %}
-                <option value="{{ inv.id }}">
-                    Invoice #{{ inv.id }} - {{ inv.customer.name }} ({{ inv.total }})
-                </option>
-            {% endfor %}
-        </select>
-    </p>
+    <!-- Customer -->
+    <div class="mb-3">
+      <label class="form-label">Customer</label>
+      <select name="customer" class="form-select" required>
+        <option value="">-- Select Customer --</option>
+        {% for c in customers %}
+          <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-    <p>
-        <label>Amount:</label><br>
-        <input type="number" name="amount" step="0.01" required>
-    </p>
+    <!-- Date -->
+    <div class="mb-3">
+      <label class="form-label">Date</label>
+      <input type="date" name="date" class="form-control">
+    </div>
 
-    <button type="submit">Save Payment</button>
-</form>
+    <!-- Amount -->
+    <div class="mb-3">
+      <label class="form-label">Amount</label>
+      <input type="number" step="0.01" name="amount" class="form-control" required>
+      <small class="text-muted">
+        This amount will be automatically adjusted against the customer’s pending invoices (oldest first)
+      </small>
+    </div>
+
+    <!-- Method -->
+    <div class="mb-3">
+      <label class="form-label">Method</label>
+      <select name="method" class="form-select">
+        <option value="CASH">Cash</option>
+        <option value="UPI">UPI</option>
+        <option value="BANK">Bank Transfer</option>
+      </select>
+    </div>
+
+    <!-- Info box -->
+    <div class="alert alert-info mt-4">
+      <strong>How this payment works:</strong>
+      <ul class="mb-0">
+        <li>Pending invoices for the selected customer will be fetched automatically</li>
+        <li>Payment amount will be adjusted from the oldest invoice first</li>
+      </ul>
+    </div>
+
+    <!-- Buttons -->
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">
+        💾 Save Payment
+      </button>
+      <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary">
+        Cancel
+      </a>
+    </div>
+
+  </form>
+
+</div>
 
 {% endblock %}

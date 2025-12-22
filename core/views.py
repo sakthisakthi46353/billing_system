@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Sum, F
 
@@ -15,15 +17,14 @@ def dashboard(request):
     total_products = Product.objects.count()
     total_invoices = Invoice.objects.count()
 
-    total_revenue = Invoice.objects.aggregate(
-        total=Sum("total")
-    )["total"] or 0
+    # 🔥 TOTAL REVENUE = sum of all invoice item line totals
+    total_revenue = Decimal("0.00")
+    for item in InvoiceItem.objects.all():
+        total_revenue += item.line_total
 
     recent_invoices = Invoice.objects.select_related(
         "customer"
     ).order_by("-id")[:5]
-
-    print("✅ DASHBOARD VIEW CALLED")  # DEBUG
 
     return render(request, "dashboard/dashboard.html", {
         "total_customers": total_customers,
@@ -55,13 +56,17 @@ def customer_balance(request):
     report = []
 
     for c in Customer.objects.all():
-        total_invoiced = Invoice.objects.filter(
-            customer=c
-        ).aggregate(total=Sum("total"))["total"] or 0
+        total_invoiced = Decimal("0.00")
+
+        items = InvoiceItem.objects.filter(
+            invoice__customer=c
+        )
+        for item in items:
+            total_invoiced += item.line_total
 
         total_paid = Payment.objects.filter(
             invoice__customer=c
-        ).aggregate(total=Sum("amount"))["total"] or 0
+        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
         report.append({
             "customer": c,
@@ -80,15 +85,19 @@ def customer_balance(request):
 # ============================
 def sales_summary(request):
     total_invoices = Invoice.objects.count()
-    total_sales = Invoice.objects.aggregate(
-        total=Sum("total")
-    )["total"] or 0
+
+    total_sales = Decimal("0.00")
+    for item in InvoiceItem.objects.all():
+        total_sales += item.line_total
 
     total_payments = Payment.objects.aggregate(
         total=Sum("amount")
-    )["total"] or 0
+    )["total"] or Decimal("0.00")
 
-    avg_invoice = total_sales / total_invoices if total_invoices else 0
+    avg_invoice = (
+        total_sales / total_invoices
+        if total_invoices else Decimal("0.00")
+    )
 
     return render(request, "reports/sales_summary.html", {
         "total_invoices": total_invoices,
@@ -106,7 +115,9 @@ def top_products(request):
         "product__name"
     ).annotate(
         total_qty=Sum("quantity"),
-        total_revenue=Sum(F("price") * F("quantity"))
+        total_revenue=Sum(
+            F("unit_price") * F("quantity")
+        )
     ).order_by("-total_qty")
 
     return render(request, "reports/top_products.html", {
@@ -134,10 +145,14 @@ def customer_statement(request, customer_id):
 
     invoices = Invoice.objects.filter(customer=customer)
     for inv in invoices:
+        inv_total = Decimal("0.00")
+        for item in inv.items.all():
+            inv_total += item.line_total
+
         entries.append({
             "date": inv.date,
             "desc": f"Invoice #{inv.id}",
-            "debit": inv.total,
+            "debit": inv_total,
             "credit": None,
         })
 
@@ -152,7 +167,7 @@ def customer_statement(request, customer_id):
 
     entries.sort(key=lambda x: x["date"])
 
-    balance = 0
+    balance = Decimal("0.00")
     for e in entries:
         if e["debit"]:
             balance += e["debit"]

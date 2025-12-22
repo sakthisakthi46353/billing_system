@@ -1,137 +1,107 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Invoice #{{ invoice.id }}</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Invoice #{{ invoice.id }}{% endblock %}
 
-<h2>Invoice #{{ invoice.id }}</h2>
+{% block content %}
 
-<p><b>Customer:</b> {{ invoice.customer.name }}</p>
-<p><b>Date:</b> {{ invoice.date }}</p>
-<p><b>Status:</b> {{ invoice.status }}</p>
+<div class="card shadow-sm p-4">
 
-<hr>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Invoice #{{ invoice.id }}</h3>
+<a href="{% url 'invoices:invoice_pdf' invoice.id %}"
+   class="btn btn-outline-danger btn-sm">
+   Download PDF
+</a>
 
-<table border="1" cellpadding="5">
-    <tr>
+  </div>
+
+  <hr>
+
+  <!-- Customer Details -->
+  <h5 class="mb-2">Customer Details</h5>
+  <p class="mb-1"><strong>Name:</strong> {{ invoice.customer.name }}</p>
+  <p class="mb-1"><strong>Date:</strong> {{ invoice.date }}</p>
+  <p>
+    <strong>Status:</strong>
+    {% if invoice.status == "PAID" %}
+      <span class="badge bg-success">PAID</span>
+    {% elif invoice.status == "PARTIALLY_PAID" %}
+      <span class="badge bg-warning text-dark">PARTIALLY PAID</span>
+    {% else %}
+      <span class="badge bg-danger">UNPAID</span>
+    {% endif %}
+  </p>
+
+  <hr>
+
+  <!-- Items Table -->
+  <table class="table table-bordered mt-3">
+    <thead class="table-light">
+      <tr>
+        <th>S.No</th>
         <th>Product</th>
         <th>Qty</th>
-        <th>Price</th>
-        <th>Total</th>
-    </tr>
+        <th>Unit Price (₹)</th>
+        <th>Line Total (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td class="text-end">₹ {{ subtotal|floatformat:2 }}</td>
+        <td class="text-end">₹ {{ total_discount|floatformat:2 }}</td>
+        <td class="text-end">₹ {{ total_tax|floatformat:2 }}</td>
+        <td class="text-end fw-bold">₹ {{ grand_total|floatformat:2 }}</td>
+        <!-- <td class="text-end">₹ {{ paid|floatformat:2 }}</td>
+        <td class="text-end fw-bold">₹ {{ balance|floatformat:2 }}</td> -->
 
-    {% for i in items %}
-    <tr>
-        <td>{{ i.product.name }}</td>
-        <td>{{ i.quantity }}</td>
-        <td>{{ i.price }}</td>
-        <td>{{ i.total }}</td>
-    </tr>
-    {% endfor %}
-</table>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center text-muted">
+          No items found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-<br>
+  <!-- Totals -->
+  <div class="row justify-content-end mt-4">
+    <div class="col-md-5">
+        <table class="table">
+  <tr>
+    <th>Subtotal</th>
+    <td class="text-end">₹ {{ subtotal|floatformat:2 }}</td>
+  </tr>
+  <tr>
+    <th>Total Discount</th>
+    <td class="text-end">₹ {{ total_discount|floatformat:2 }}</td>
+  </tr>
+  <tr>
+    <th>Total Tax</th>
+    <td class="text-end">₹ {{ total_tax|floatformat:2 }}</td>
+  </tr>
+  <tr class="table-success fw-bold">
+    <th>Grand Total</th>
+    <td class="text-end">₹ {{ grand_total|floatformat:2 }}</td>
+  </tr>
+  <tr>
+    <th>Paid</th>
+    <td class="text-end">₹ {{ paid|floatformat:2 }}</td>
+  </tr>
+  <tr class="table-warning fw-bold">
+    <th>Balance</th>
+    <td class="text-end">₹ {{ balance|floatformat:2 }}</td>
+  </tr>
 
-<h3>Subtotal: {{ invoice.subtotal }}</h3>
-<h3>Tax: {{ invoice.tax }}</h3>
-<h3><b>Total: {{ invoice.total }}</b></h3>
+      </table>
+    </div>
+  </div>
 
-<hr>
+  <a href="{% url 'invoices:invoice_list' %}" class="btn btn-secondary mt-3">
+    ← Back to Invoices
+  </a>
 
-<h3>Paid: {{ paid_amount }}</h3>
+</div>
 
-{% if balance > 0 %}
-    <h3>Balance: {{ balance }}</h3>
-{% else %}
-    <h3>Balance: 0.00</h3>
-{% endif %}
-
-<hr>
-
-<p>
-    <a href="{% url 'payment_add' invoice.id %}">💰 Add Payment</a><br>
-    <a href="{% url 'payment_history' invoice.id %}">📄 Payment History</a><br>
-    <a href="/invoices/">← Back to Dashboard</a>
-</p>
-
-</body>
-</html>
-<h2>Invoice #{{ invoice.id }}</h2>
-
-<p><b>Customer:</b> {{ invoice.customer.name }}</p>
-<p><b>Date:</b> {{ invoice.date }}</p>
-<p><b>Status:</b> {{ invoice.status }}</p>
-
-<hr>
-
-<table border="1" cellpadding="5">
-<tr>
-  <th>Product</th>
-  <th>Qty</th>
-  <th>Price</th>
-  <th>Total</th>
-</tr>
-
-{% for item in items %}
-<tr>
-  <td>{{ item.product.name }}</td>
-  <td>{{ item.quantity }}</td>
-  <td>{{ item.price }}</td>
-  <td>{{ item.line_total }}</td>
-</tr>
-{% endfor %}
-</table>
-
-<hr>
-
-<p><b>Subtotal:</b> {{ invoice.subtotal }}</p>
-<p><b>Tax (18%):</b> {{ invoice.tax }}</p>
-<p><b>Grand Total:</b> {{ invoice.total }}</p>
-
-<hr>
-
-<p><b>Paid Amount:</b> {{ total_paid }}</p>
-<p><b>Remaining Balance:</b> {{ balance }}</p>
-
-<a href="{% url 'payment_add' invoice.id %}">➕ Add Payment</a>
-<h2>Invoice #{{ invoice.id }}</h2>
-
-<p><b>Customer:</b> {{ invoice.customer.name }}</p>
-<p><b>Date:</b> {{ invoice.date }}</p>
-<p><b>Status:</b> {{ invoice.status }}</p>
-
-<hr>
-
-<h3>Invoice Items</h3>
-
-<table border="1" cellpadding="5">
-<tr>
-  <th>Product</th>
-  <th>Qty</th>
-  <th>Price</th>
-  <th>Line Total</th>
-</tr>
-
-{% for item in items %}
-<tr>
-  <td>{{ item.product.name }}</td>
-  <td>{{ item.quantity }}</td>
-  <td>{{ item.price }}</td>
-  <td>{{ item.line_total }}</td>
-</tr>
-{% endfor %}
-</table>
-
-<hr>
-
-<p><b>Subtotal:</b> {{ invoice.subtotal }}</p>
-<p><b>Tax:</b> {{ invoice.tax }}</p>
-<p><b>Grand Total:</b> {{ invoice.total }}</p>
-
-<hr>
-
-<p><b>Paid Amount:</b> {{ total_paid }}</p>
-<p><b>Remaining Balance:</b> {{ balance }}</p>
-
-<a href="{% url 'payment_add' invoice.id %}">➕ Add Payment</a>
+{% endblock %}

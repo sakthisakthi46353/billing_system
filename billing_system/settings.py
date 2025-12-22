@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'products',
     'invoices',
     'payments',
+    'suppliers',
     'reports',
     'dashboard',   # 🔥 THIS MUST BE HERE
 ]
