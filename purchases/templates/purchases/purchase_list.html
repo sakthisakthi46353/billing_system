@@ -1,35 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Purchases{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>Purchases</h2>
+<h2>Purchases</h2>
 
-  <a href="{% url 'purchases:purchase_add' %}" class="btn btn-primary mb-3">
-    ➕ Add Purchase
-  </a>
+<a href="{% url 'purchases:purchase_add' %}">➕ Add Purchase</a>
 
-  <table class="table table-bordered">
+<br><br>
+
+<table border="1" cellpadding="10" cellspacing="0" width="80%">
+  <thead>
     <tr>
       <th>ID</th>
       <th>Supplier</th>
-      <th>Total</th>
-      <th>Action</th>
+      <th>Date</th>
+      <th>Items</th>
+      <th>Qty</th>
+      <th>Price</th>
+      <th>Total Amount</th>
     </tr>
+  </thead>
 
+  <tbody>
     {% for p in purchases %}
-    <tr>
-      <td>{{ p.id }}</td>
-      <td>{{ p.supplier.name }}</td>
-      <td>₹ {{ p.total|floatformat:2 }}</td>
-      <td>
-        <a href="{% url 'purchases:purchase_view' p.id %}">View</a> |
-        <a href="{% url 'purchases:purchase_delete' p.id %}"
-           onclick="return confirm('Delete purchase?')"
-           class="text-danger">Delete</a>
-      </td>
-    </tr>
+      {% for item in p.items.all %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.supplier.name }}</td>
+        <td>{{ p.date }}</td>
+
+        <!-- Product -->
+        <td>{{ item.product.name }}</td>
+
+        <!-- Quantity -->
+        <td>{{ item.quantity }}</td>
+
+        <!-- Price -->
+        <td>₹ {{ item.price }}</td>
+
+        <!-- Total -->
+        <td>₹ {{ p.total_amount }}</td>
+      </tr>
+      {% endfor %}
+    {% empty %}
+      <tr>
+        <td colspan="7" align="center">No purchases yet</td>
+      </tr>
     {% endfor %}
-  </table>
-</div>
+  </tbody>
+</table>
+
 {% endblock %}

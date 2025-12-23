@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add Purchase</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  <p>
+    <label>Supplier</label><br>
+    <select name="supplier" required>
+      <option value="">-- Select Supplier --</option>
+      {% for s in suppliers %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </p>
+
+  <p>
+    <label>Product</label><br>
+    <select name="product" required>
+      <option value="">-- Select Product --</option>
+      {% for p in products %}
+        <option value="{{ p.id }}">{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </p>
+
+  <p>
+    <label>Quantity</label><br>
+    <input type="number" name="quantity" required>
+  </p>
+
+  <p>
+    <label>Price</label><br>
+    <input type="number" step="0.01" name="price" required>
+  </p>
+
+  <button type="submit">Save Purchase</button>
+</form>
+
+<a href="{% url 'purchases:purchase_list' %}">← Back</a>
+{% endblock %}
