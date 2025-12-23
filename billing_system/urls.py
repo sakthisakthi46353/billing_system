@@ -7,8 +7,10 @@ urlpatterns = [
     path("", dashboard, name="dashboard"),
 
     path("customers/", include("customers.urls")),
-     path("products/", include("products.urls")),
+    path("products/", include("products.urls")),
     path("invoices/", include("invoices.urls")),  # ✅ MUST
-   path("payments/", include("payments.urls")),
-  path("reports/", include("reports.urls")),
+    path("payments/", include("payments.urls")),
+    path("reports/", include("reports.urls")),
+    path("suppliers/", include("suppliers.urls")),
+
 ]

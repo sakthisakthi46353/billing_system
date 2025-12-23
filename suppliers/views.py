@@ -1,19 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Supplier
 
-from django.shortcuts import render
-from django.shortcuts import render
-from .models import Supplier
-
-from django.shortcuts import render
-from .models import Supplier
-from django.shortcuts import render
-
 def supplier_list(request):
-    return render(request, "suppliers/supplier_list.html")
+    suppliers = Supplier.objects.all()
+    return render(request, "suppliers/supplier_list.html", {
+        "suppliers": suppliers
+    })
 
-
-# ADD
 def supplier_add(request):
     if request.method == "POST":
         Supplier.objects.create(
@@ -26,7 +19,6 @@ def supplier_add(request):
 
     return render(request, "suppliers/supplier_add.html")
 
-# EDIT
 def supplier_edit(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
 
@@ -42,21 +34,7 @@ def supplier_edit(request, pk):
         "supplier": supplier
     })
 
-# DELETE
 def supplier_delete(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     supplier.delete()
     return redirect("suppliers:supplier_list")
-from django.db.models import Sum
-from invoices.models import InvoiceItem
-from decimal import Decimal
-
-def dashboard(request):
-    total_revenue = InvoiceItem.objects.aggregate(
-        total=Sum("unit_price")
-    )["total"] or Decimal("0.00")
-
-    return render(request, "dashboard/dashboard.html", {
-        "total_revenue": total_revenue,
-    })
-from django.shortcuts import render
