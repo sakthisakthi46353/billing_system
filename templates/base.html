@@ -1,111 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>{% block title %}Billing System{% endblock %}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>{% block title %}Billing System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Bootstrap -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<style>
-body{
-  margin:0;
-  font-family:system-ui,Segoe UI,Roboto;
-  background:#f5f7fb;
-  color:#1f2937;
-}
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, Segoe UI, Roboto, Arial;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
 
-/* ===== HEADER ===== */
-header{
-  background:#ffffff;
-  border-bottom:1px solid #e5e7eb;
-}
-.header-inner{
-  max-width:1200px;
-  margin:0 auto;
-  padding:16px 24px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.brand{
-  font-size:20px;
-  font-weight:700;
-  color:#111827;
-}
-nav a{
-  margin-left:18px;
-  text-decoration:none;
-  color:#6b7280;
-  font-weight:600;
-}
-nav a:hover{
-  color:#2563eb;
-}
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-/* ===== PAGE CONTAINER ===== */
-.page-container{
-  max-width:1200px;
-  margin:32px auto;
-  padding:0 24px;
-}
+        .header-inner {
+            max-width: 1200px;
+            margin: auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-/* ===== CARD ===== */
-.card{
-  background:#ffffff;
-  border-radius:12px;
-  padding:24px;
-  box-shadow:0 10px 25px rgba(0,0,0,.05);
-  border:none;
-}
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
 
-/* ===== TABLE ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th,td{
-  padding:12px;
-  border-bottom:1px solid #e5e7eb;
-}
-th{
-  background:#f9fafb;
-  color:#6b7280;
-  font-weight:600;
-  text-align:left;
-}
+        nav a {
+            margin-left: 18px;
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 600;
+        }
 
-/* ===== ACTION LINKS ===== */
-.actions a{
-  margin-right:12px;
-  font-weight:600;
-}
-.actions .delete{
-  color:#dc2626;
-}
-</style>
+        nav a:hover {
+            color: #2563eb;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
 
 <body>
 
+<!-- ================= HEADER ================= -->
 <header>
-  <div class="header-inner">
-    <div class="brand">Billing System</div>
-    <nav>
-      <a href="{% url 'dashboard' %}">Dashboard</a>
-      <a href="{% url 'customer_list' %}">Customers</a>
-      <a href="{% url 'products:product_list' %}">Products</a>
-      <a href="{% url 'invoices:invoice_list' %}">Invoices</a>
-      <a href="{% url 'payments:payment_list' %}">Payments</a>
-      <a href="{% url 'reports_home' %}">Reports</a>
-    </nav>
-  </div>
+    <div class="header-inner">
+        <div class="brand">Billing System</div>
+ <nav>
+  <a href="{% url 'dashboard' %}">Dashboard</a>
+  <a href="{% url 'customer_list' %}">Customers</a>
+  <a href="{% url 'products:product_list' %}">Products</a>
+  <a href="{% url 'invoices:invoice_list' %}">Invoices</a>
+  <a href="{% url 'payments:payment_list' %}">Payments</a>
+  <a href="{% url 'reports:reports_home' %}">Reports</a>
+</nav>
+    </div>
 </header>
 
-<div class="page-container">
-  {% block content %}{% endblock %}
-</div>
+<!-- ================= MAIN CONTENT ================= -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

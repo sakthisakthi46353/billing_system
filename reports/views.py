@@ -9,8 +9,10 @@ from payments.models import Payment
 # =========================
 # REPORTS HOME PAGE
 # =========================
+from django.shortcuts import render
+
 def reports_home(request):
-    return render(request, 'reports/reports_home.html')
+    return render(request, "reports/home.html")
 
 
 # =========================

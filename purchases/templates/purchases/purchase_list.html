@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Purchases{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Purchases</h2>
+
+  <a href="{% url 'purchases:purchase_add' %}" class="btn btn-primary mb-3">
+    ➕ Add Purchase
+  </a>
+
+  <table class="table table-bordered">
+    <tr>
+      <th>ID</th>
+      <th>Supplier</th>
+      <th>Total</th>
+      <th>Action</th>
+    </tr>
+
+    {% for p in purchases %}
+    <tr>
+      <td>{{ p.id }}</td>
+      <td>{{ p.supplier.name }}</td>
+      <td>₹ {{ p.total|floatformat:2 }}</td>
+      <td>
+        <a href="{% url 'purchases:purchase_view' p.id %}">View</a> |
+        <a href="{% url 'purchases:purchase_delete' p.id %}"
+           onclick="return confirm('Delete purchase?')"
+           class="text-danger">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

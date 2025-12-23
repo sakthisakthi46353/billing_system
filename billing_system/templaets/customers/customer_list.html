@@ -1,34 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Customer List</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h2>Customers</h2>
+{% block title %}Invoices{% endblock %}
 
-<a href="/customers/add/">+ Add Customer</a>
-<br><br>
+{% block content %}
+<div class="card">
+    <h2>Invoices</h2>
 
-<table border="1">
-<tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Phone</th>
-</tr>
-
-{% for c in customers %}
-<tr>
-    <td>{{ c.id }}</td>
-    <td>{{ c.name }}</td>
-    <td>{{ c.phone }}</td>
-</tr>
-{% empty %}
-<tr>
-    <td colspan="3">No customers</td>
-</tr>
-{% endfor %}
-</table>
-
-</body>
-</html>
+    {% if invoices %}
+        <table class="table mt-3">
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Status</th>
+            </tr>
+            {% for inv in invoices %}
+            <tr>
+                <td>{{ inv.id }}</td>
+                <td>{{ inv.customer }}</td>
+                <td>{{ inv.total }}</td>
+                <td>{{ inv.status }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No invoices found</p>
+    {% endif %}
+</div>
+{% endblock %}

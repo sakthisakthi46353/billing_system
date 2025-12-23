@@ -1,55 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sales Summary Report</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 50%;
-        }
-        table, th, td {
-            border: 1px solid #444;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .back {
-            margin-top: 20px;
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h2>Sales Summary Report</h2>
+{% block title %}Sales Summary{% endblock %}
 
-    <table>
+{% block content %}
+
+<div class="card">
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Sales Summary</h2>
+        <a href="{% url 'reports:reports_home' %}" class="btn secondary">
+            ← Back to Reports
+        </a>
+    </div>
+
+    <table class="table" style="margin-top:16px;">
         <tr>
             <th>Total Invoices</th>
             <td>{{ total_invoices }}</td>
         </tr>
         <tr>
-            <th>Total Sales Amount</th>
+            <th>Total Sales</th>
             <td>{{ total_sales }}</td>
         </tr>
         <tr>
-            <th>Total Tax Amount</th>
-            <td>{{ total_tax }}</td>
+            <th>Total Payments</th>
+            <td>{{ total_payments }}</td>
+        </tr>
+        <tr>
+            <th>Average Invoice</th>
+            <td>{{ avg_invoice }}</td>
         </tr>
     </table>
 
-    <a class="back" href="{% url 'reports_home' %}">← Back to Reports</a>
+</div>
 
-</body>
-</html>
+{% endblock %}

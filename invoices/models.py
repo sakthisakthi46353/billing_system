@@ -75,3 +75,6 @@ class InvoiceItem(models.Model):
         tax = taxable * (self.tax_percent / Decimal("100"))
 
         return taxable + tax
+    @property
+    def total(self):
+        return sum(item.line_total for item in self.items.all())

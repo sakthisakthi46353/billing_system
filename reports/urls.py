@@ -1,49 +1,66 @@
 from django.urls import path
-from core import views   # IMPORTANT
+from core import views   # reports views are inside core app
+
+app_name = "reports"
+
+path(
+    "customer-statement/<int:customer_id>/",
+    views.customer_statement,
+    name="customer_statement"
+)
 
 urlpatterns = [
-    path('', views.reports_home, name='reports_home'),
-
+    # =========================
+    # REPORTS HOME
+    # =========================
     path(
-        'customer-balance/',
+        "",
+        views.reports_home,
+        name="reports_home"
+    ),
+
+    # =========================
+    # CUSTOMER BALANCE REPORT
+    # =========================
+    path(
+        "customer-balance/",
         views.customer_balance,
-        name='customer_balance'
+        name="customer_balance"
     ),
 
+    # =========================
+    # SALES SUMMARY REPORT
+    # =========================
     path(
-        'sales-summary/',
+        "sales-summary/",
         views.sales_summary,
-        name='sales_summary'
+        name="sales_summary"
     ),
 
+    # =========================
+    # TOP PRODUCTS REPORT
+    # =========================
     path(
-        'top-products/',
+        "top-products/",
         views.top_products,
-        name='top_products'
+        name="top_products"
     ),
 
+    # =========================
+    # CUSTOMER STATEMENT
+    # =========================
     path(
-        'customer-statement/',
+        "customer-statement/",
         views.customer_statement_select,
-        name='customer_statement_select'
+        name="customer_statement_select"
     ),
 
     path(
-        'customer-statement/<int:customer_id>/',
+        "customer-statement/<int:customer_id>/",
         views.customer_statement,
-        name='customer_statement'
+        name="customer_statement"
     ),
 ]
-from django.urls import path
-from core import views
+app_name = "reports"
 
-urlpatterns = [
-    path('', views.reports_home, name='reports_home'),
-
-    path('customer-balance/', views.customer_balance, name='customer_balance'),
-    path('sales-summary/', views.sales_summary, name='sales_summary'),
-    path('top-products/', views.top_products, name='top_products'),
-
-    path('customer-statement/select/', views.customer_statement_select, name='customer_statement_select'),
-    path('customer-statement/<int:customer_id>/', views.customer_statement, name='customer_statement'),
-]
+path("", views.reports_home, name="reports_home")

@@ -1,9 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render
 from .models import Product
 
-# ======================
-# PRODUCT LIST
-# ======================
 def product_list(request):
     products = Product.objects.all()
     return render(request, "products/product_list.html", {
@@ -14,14 +11,22 @@ def product_list(request):
 # ======================
 # ADD PRODUCT
 # ======================
+from django.shortcuts import render, redirect
+from .models import Product
+
 def product_add(request):
     if request.method == "POST":
+        name = request.POST.get("name")
+        price = request.POST.get("price")
+        stock = request.POST.get("stock")
+
         Product.objects.create(
-            name=request.POST.get("name"),
-            price=request.POST.get("price"),
-            stock=request.POST.get("stock"),
+            name=name,
+            price=price,
+            stock=stock
         )
-        return redirect("products:product_list")
+
+        return redirect("products:product_list")  # 👈 redirect works now
 
     return render(request, "products/product_add.html")
 
@@ -39,6 +44,9 @@ def product_view(request, pk):
 # ======================
 # EDIT PRODUCT
 # ======================
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product
+
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
@@ -47,12 +55,12 @@ def product_edit(request, pk):
         product.price = request.POST.get("price")
         product.stock = request.POST.get("stock")
         product.save()
+
         return redirect("products:product_list")
 
     return render(request, "products/product_edit.html", {
         "product": product
     })
-
 
 # ======================
 # DELETE PRODUCT

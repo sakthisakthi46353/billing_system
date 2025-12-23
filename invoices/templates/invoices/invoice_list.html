@@ -39,16 +39,18 @@
         </td>
         <td class="actions">
           <a href="{% url 'invoices:invoice_view' invoice.id %}">View</a>
-          |
+          |<a href="{% url 'invoices:invoice_list' %}">Invoices</a>
+
           <a href="{% url 'invoices:invoice_delete' invoice.id %}"
              onclick="return confirm('Delete this invoice?')"
              class="text-danger">
              Delete
           </a>
           |
-          <a href="{% url 'payments:payment_add_invoice' invoice.id %}">
-            💰 Payment
+         <a href="{% url 'payments:payment_add_invoice' invoice.id %}">
+    💰 Payment
           </a>
+
 
         </td>
       </tr>

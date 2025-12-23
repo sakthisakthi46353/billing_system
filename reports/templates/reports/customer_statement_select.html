@@ -1,20 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Select Customer{% endblock %}
+{% block title %}Customer Statement{% endblock %}
 
 {% block content %}
-<h2>Select Customer</h2>
 
-<ul>
-    {% for c in customers %}
-        <li>
-            <a href="{% url 'customer_statement' c.id %}">
-                {{ c.name }}
-            </a>
-        </li>
-    {% endfor %}
-</ul>
+<div class="card">
 
-<br>
-<a href="{% url 'reports_home' %}">← Back to Reports</a>
+    <!-- PAGE HEADER -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Customer Statement</h2>
+        <a href="{% url 'reports:reports_home' %}" class="btn secondary">
+            ← Back to Reports
+        </a>
+    </div>
+
+    <p style="margin-top:10px; color:#555;">
+        Select a customer to view invoice and payment history
+    </p>
+
+    <hr>
+
+    <!-- CUSTOMER LIST -->
+    <ul style="list-style:none; padding-left:0;">
+        {% for customer in customers %}
+            <li style="margin-bottom:8px;">
+                <a href="{% url 'reports:customer_statement' customer.id %}">
+                    {{ customer.name }}
+                </a>
+            </li>
+        {% empty %}
+            <li>No customers found</li>
+        {% endfor %}
+    </ul>
+
+</div>
+
 {% endblock %}

@@ -15,11 +15,10 @@ from payments.models import Payment
 # LIST INVOICES
 # ================================
 def invoice_list(request):
-    invoices = Invoice.objects.select_related("customer").all()
+    invoices = Invoice.objects.all()
     return render(request, "invoices/invoice_list.html", {
         "invoices": invoices
     })
-
 
 # ================================
 # ADD NEW INVOICE (DYNAMIC ROWS)

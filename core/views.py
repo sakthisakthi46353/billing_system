@@ -17,7 +17,7 @@ def dashboard(request):
     total_products = Product.objects.count()
     total_invoices = Invoice.objects.count()
 
-    # 🔥 TOTAL REVENUE = sum of all invoice item line totals
+    # Total revenue from invoice items
     total_revenue = Decimal("0.00")
     for item in InvoiceItem.objects.all():
         total_revenue += item.line_total
@@ -53,30 +53,35 @@ def reports_home(request):
 # CUSTOMER BALANCE SUMMARY
 # ============================
 def customer_balance(request):
-    report = []
+    report_data = []   # 🔴 NAME MUST MATCH TEMPLATE
 
-    for c in Customer.objects.all():
+    customers = Customer.objects.all()
+
+    for c in customers:
+        # Total invoiced
         total_invoiced = Decimal("0.00")
-
         items = InvoiceItem.objects.filter(
             invoice__customer=c
         )
         for item in items:
             total_invoiced += item.line_total
 
+        # Total paid
         total_paid = Payment.objects.filter(
             invoice__customer=c
-        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+        ).aggregate(
+            total=Sum("amount")
+        )["total"] or Decimal("0.00")
 
-        report.append({
+        report_data.append({
             "customer": c,
-            "total_invoiced": total_invoiced,
+            "total_invoice": total_invoiced,
             "total_paid": total_paid,
             "balance": total_invoiced - total_paid,
         })
 
     return render(request, "reports/customer_balance.html", {
-        "report": report
+        "report_data": report_data   # 🔴 SAME NAME
     })
 
 
@@ -165,6 +170,7 @@ def customer_statement(request, customer_id):
             "credit": pay.amount,
         })
 
+    # Sort by date
     entries.sort(key=lambda x: x["date"])
 
     balance = Decimal("0.00")

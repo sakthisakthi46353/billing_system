@@ -1,191 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Billing System Dashboard</title>
+{% extends "base.html" %}
 
-  <style>
-    :root{
-      --bg:#f5f7fb;
-      --card:#ffffff;
-      --primary:#2563eb;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --border:#e5e7eb;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto;
-      background:var(--bg);
-      color:var(--text);
-    }
-    .container{max-width:1200px;margin:0 auto;padding:24px}
-    header{background:var(--card);border-bottom:1px solid var(--border)}
-    .header-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:16px 24px;max-width:1200px;margin:0 auto
-    }
-    .brand{font-weight:700;font-size:20px}
-    nav a{
-      margin-left:16px;
-      text-decoration:none;
-      color:var(--muted);
-      font-weight:500
-    }
-    nav a:hover{color:var(--primary)}
+{% block title %}Dashboard{% endblock %}
 
-    .page-title{font-size:24px;font-weight:700;margin:24px 0 8px}
-    .subtitle{color:var(--muted)}
+{% block content %}
 
-    .cards{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:16px;
-      margin-top:24px
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:16px
-    }
-    .card h3{margin:0 0 8px;font-size:14px;color:var(--muted)}
-    .card .value{font-size:26px;font-weight:700}
+<h2 class="mb-3">Dashboard Overview</h2>
+<p class="text-muted">
+  Welcome back. Here’s a quick summary of your business.
+</p>
 
-    .section{margin-top:32px}
-    table{
-      width:100%;
-      border-collapse:collapse;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-      overflow:hidden
-    }
-    th,td{
-      padding:12px 14px;
-      border-bottom:1px solid var(--border);
-      text-align:left
-    }
-    th{background:#f9fafb;font-size:13px;color:var(--muted)}
-    tr:last-child td{border-bottom:none}
-
-    .actions a{
-      margin-right:10px;
-      color:var(--primary);
-      text-decoration:none;
-      font-weight:500
-    }
-    .actions a.delete{color:#dc2626}
-
-    .badge{
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:600
-    }
-    .paid{background:#dcfce7;color:#166534}
-    .partial{background:#fef3c7;color:#92400e}
-    .unpaid{background:#fee2e2;color:#991b1b}
-  </style>
-</head>
-
-<body>
-
-<header>
-  <div class="header-inner">
-    <div class="brand">Billing System</div>
-    <nav>
-      <!-- ✅ SAFE URLS WITH NAMESPACES -->
-      <a href="{% url 'dashboard' %}">Dashboard</a>
-      <a href="{% url 'customer_list' %}">Customers</a>
-      <a href="{% url 'products:product_list' %}">Products</a>
-      <a href="{% url 'invoices:invoice_list' %}">Invoices</a>
-      <a href="{% url 'payments:payment_list' %}">Payments</a>
-      <a href="{% url 'reports_home' %}">Reports</a>
-    </nav>
-  </div>
-</header>
-
-<main class="container">
-
-  <div class="page-title">Dashboard Overview</div>
-  <div class="subtitle">
-    Welcome back. Here’s a quick summary of your business.
-  </div>
-
-  <!-- ✅ SUMMARY CARDS -->
-  <div class="cards">
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
     <div class="card">
-      <h3>Total Customers</h3>
-      <div class="value">{{ total_customers }}</div>
-    </div>
-
-    <div class="card">
-      <h3>Total Products</h3>
-      <div class="value">{{ total_products }}</div>
-    </div>
-
-    <div class="card">
-      <h3>Total Invoices</h3>
-      <div class="value">{{ total_invoices }}</div>
-    </div>
-
-    <div class="card">
-      <h3>Total Revenue</h3>
-      <div class="value">₹ {{ total_revenue|floatformat:2 }}</div>
+      <h6>Total Customers</h6>
+      <h3>{{ total_customers }}</h3>
     </div>
   </div>
 
-  <!-- ✅ RECENT INVOICES -->
-  <div class="section">
-    <h2>Recent Invoices</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Customer</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for invoice in recent_invoices %}
-        <tr>
-          <td>#{{ invoice.id }}</td>
-          <td>{{ invoice.customer.name }}</td>
-          <td>₹ {{ invoice.total|floatformat:2 }}</td>
-          <td>
-            {% if invoice.status == 'PAID' %}
-              <span class="badge paid">PAID</span>
-            {% elif invoice.status == 'PARTIALLY_PAID' %}
-              <span class="badge partial">PARTIALLY PAID</span>
-            {% else %}
-              <span class="badge unpaid">UNPAID</span>
-            {% endif %}
-          </td>
-          <td class="actions">
-            <!-- ✅ FIXED URL -->
-            <a href="{% url 'invoices:invoice_view' invoice.id %}">View</a>
-            <a href="{% url 'invoices:invoice_delete' invoice.id %}" class="delete">
-              Delete
-            </a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="5">No invoices found</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="col-md-3">
+    <div class="card">
+      <h6>Total Products</h6>
+      <h3>{{ total_products }}</h3>
+    </div>
   </div>
 
-</main>
+  <div class="col-md-3">
+    <div class="card">
+      <h6>Total Invoices</h6>
+      <h3>{{ total_invoices }}</h3>
+    </div>
+  </div>
 
-</body>
-</html>
+  <div class="col-md-3">
+    <div class="card">
+      <h6>Total Revenue</h6>
+      <h3>₹ {{ total_revenue|floatformat:2 }}</h3>
+    </div>
+  </div>
+</div>
+
+<h4>Recent Invoices</h4>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Customer</th>
+      <th>Total</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for invoice in recent_invoices %}
+    <tr>
+      <td>#{{ invoice.id }}</td>
+      <td>{{ invoice.customer.name }}</td>
+      <td>₹ {{ invoice.total|floatformat:2 }}</td>
+      <td>{{ invoice.status }}</td>
+      <td>
+        <a href="{% url 'invoices:invoice_view' invoice.id %}">View</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">No invoices found</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

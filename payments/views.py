@@ -94,35 +94,73 @@ def payment_list(request):
 # =========================
 # ADD PAYMENT
 # =========================
-def payment_add(request):
-    invoices = Invoice.objects.select_related("customer").all()
+from customers.models import Customer
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
+from .models import Payment
+from invoices.models import Invoice
+
+
+def payment_add(request, invoice_id=None):
+
+    customers = Customer.objects.all()   # ✅ IMPORTANT
+    invoices = Invoice.objects.all()
+    invoice = None
+
+    # if coming from invoice page
+    if invoice_id:
+        invoice = get_object_or_404(Invoice, id=invoice_id)
 
     if request.method == "POST":
-        invoice_id = request.POST.get("invoice")
+
+        customer_id = request.POST.get("customer")
         amount = request.POST.get("amount")
-        date = request.POST.get("date")
-        method = request.POST.get("method")
 
-        if not invoice_id or not amount:
-            messages.error(request, "Invoice and Amount are required")
-            return redirect("payments:payment_add")
+        if not customer_id or not amount:
+            return render(request, "payments/payment_add.html", {
+                "customers": customers,
+                "invoices": invoices,
+                "error": "Customer and Amount required"
+            })
 
-        invoice = get_object_or_404(Invoice, id=invoice_id)
+        # 🔥 get oldest unpaid invoice for customer
+        invoice = Invoice.objects.filter(
+            customer_id=customer_id
+        ).order_by("date").first()
+
+        if not invoice:
+            return render(request, "payments/payment_add.html", {
+                "customers": customers,
+                "invoices": invoices,
+                "error": "No invoice found for this customer"
+            })
 
         Payment.objects.create(
             invoice=invoice,
-            amount=Decimal(amount),
-            date=date,
-            method=method
+            amount=Decimal(amount)
         )
 
-        _update_invoice_status(invoice)
+        # 🔄 update invoice status
+        total_paid = invoice.payments.aggregate(
+            total=Sum("amount")
+        )["total"] or Decimal("0.00")
 
-        messages.success(request, "Payment added successfully")
+        if total_paid == 0:
+            invoice.status = "UNPAID"
+        elif total_paid < invoice.total:
+            invoice.status = "PARTIALLY_PAID"
+        else:
+            invoice.status = "PAID"
+
+        invoice.save()
+
         return redirect("payments:payment_list")
 
     return render(request, "payments/payment_add.html", {
-        "invoices": invoices
+        "customers": customers,   # ✅ MUST
+        "invoices": invoices,
+        "invoice": invoice
     })
 
 

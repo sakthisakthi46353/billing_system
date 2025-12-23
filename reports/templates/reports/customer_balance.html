@@ -3,47 +3,49 @@
 {% block title %}Customer Balance Summary{% endblock %}
 
 {% block content %}
+
 <div class="card">
 
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2>Customer Balance Summary</h2>
-    <a href="{% url 'reports_home' %}" class="btn secondary">← Back to Reports</a>
-  </div>
+    <!-- 🔹 PAGE HEADER (INGA THA POTANUM) -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Customer Balance Summary</h2>
+        <a href="{% url 'reports:reports_home' %}" class="btn secondary">
+            ← Back to Reports
+        </a>
+    </div>
 
-  <table class="table" style="margin-top:16px; width:100%;">
-    <thead>
-      <tr>
-        <th>Customer</th>
-        <th>Total Invoiced</th>
-        <th>Total Paid</th>
-        <th>Balance</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in report %}
-      <tr>
-        <td>{{ row.customer.name }}</td>
-        <td>{{ row.invoice_total }}</td>
-        <td>{{ row.paid_total }}</td>
-        <td
-          {% if row.balance < 0 %}
-            style="color:red; font-weight:bold;"
-          {% elif row.balance > 0 %}
-            style="color:green; font-weight:bold;"
-          {% endif %}
-        >
-          {{ row.balance }}
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" style="text-align:center;">
-          No data available
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <!-- 🔹 TABLE -->
+    <table class="table" style="margin-top:16px; width:100%;">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Total Invoiced</th>
+                <th>Total Paid</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report_data %}
+            <tr>
+                <td>{{ row.customer.name }}</td>
+                <td>{{ row.total_invoice }}</td>
+                <td>{{ row.total_paid }}</td>
+                <td>
+                    {% if row.balance > 0 %}
+                        <span style="color:red;">{{ row.balance }}</span>
+                    {% else %}
+                        <span style="color:green;">0</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No data found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 </div>
+
 {% endblock %}

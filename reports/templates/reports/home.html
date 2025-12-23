@@ -1,48 +1,84 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Reports{% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="container mt-4">
 
-  <!-- HEADER -->
-  <div style="display:flex; align-items:center; gap:10px;">
-    <span style="font-size:28px;">📊</span>
-    <h2 style="margin:0;">Reports Dashboard</h2>
-  </div>
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Reports</h2>
+    </div>
 
-  <p style="margin-top:8px; color:#666;">
-    View business summaries and analytics reports
-  </p>
+    <!-- REPORT BUTTONS -->
+    <div class="row g-3">
 
-  <!-- REPORT LINKS -->
-  <ul style="margin-top:20px; line-height:2; font-size:16px;">
+        <!-- CUSTOMER BALANCE -->
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Customer Balance</h5>
+                    <p class="text-muted small">
+                        Outstanding balance for each customer
+                    </p>
+                    <a href="{% url 'reports:customer_balance' %}"
+                       class="btn btn-outline-primary w-100">
+                        View Report
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <li>
-      <a href="{% url 'customer_balance' %}">
-        Customer Balance Summary
-      </a>
-    </li>
+        <!-- SALES SUMMARY -->
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Sales Summary</h5>
+                    <p class="text-muted small">
+                        Total sales by date range
+                    </p>
+                    <a href="{% url 'reports:sales_summary' %}"
+                       class="btn btn-outline-success w-100">
+                        View Report
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <li>
-      <a href="{% url 'sales_summary' %}">
-        Sales Summary
-      </a>
-    </li>
+        <!-- TOP PRODUCTS -->
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Top Products</h5>
+                    <p class="text-muted small">
+                        Best selling products
+                    </p>
+                    <a href="{% url 'reports:top_products' %}"
+                       class="btn btn-outline-warning w-100">
+                        View Report
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <li>
-      <a href="{% url 'top_products' %}">
-        Top Selling Products
-      </a>
-    </li>
+        <!-- CUSTOMER STATEMENT -->
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Customer Statement</h5>
+                    <p class="text-muted small">
+                        Invoice & payment history
+                    </p>
+                    <a href="{% url 'reports:customer_statement_select' %}"
+                       class="btn btn-outline-info w-100">
+                        View Report
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <li>
-      <a href="{% url 'customer_statement_select' %}">
-        Customer Statement
-      </a>
-    </li>
-
-  </ul>
+    </div>
 
 </div>
 {% endblock %}
