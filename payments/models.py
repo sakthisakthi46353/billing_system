@@ -1,10 +1,24 @@
 from django.db import models
-from invoices.models import Invoice
+from customers.models import Customer
 
 class Payment(models.Model):
-    invoice = models.ForeignKey(Invoice, related_name="payments", on_delete=models.CASCADE)
+
+    PAYMENT_METHODS = [
+        ('CASH', 'Cash'),
+        ('UPI', 'UPI'),
+        ('BANK', 'Bank Transfer'),
+        ('CARD', 'Card'),
+    ]
+
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateField(auto_now_add=True)
+
+    method = models.CharField(
+        max_length=10,
+        choices=PAYMENT_METHODS,
+        default='CASH'
+    )
 
     def __str__(self):
-        return f"Payment {self.amount} for Invoice #{self.invoice.id}"
+        return f"{self.customer.name} - {self.amount} ({self.method})"

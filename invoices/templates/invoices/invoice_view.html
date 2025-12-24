@@ -5,21 +5,22 @@
 
 <div class="card shadow-sm p-4">
 
+  <!-- ================= HEADER ================= -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Invoice #{{ invoice.id }}</h3>
-<a href="{% url 'invoices:invoice_pdf' invoice.id %}"
-   class="btn btn-outline-danger btn-sm">
-   Download PDF
-</a>
 
+    <a href="{% url 'invoices:invoice_pdf' invoice.id %}"
+       class="btn btn-outline-danger btn-sm">
+       Download PDF
+    </a>
   </div>
 
   <hr>
 
-  <!-- Customer Details -->
-  <h5 class="mb-2">Customer Details</h5>
-  <p class="mb-1"><strong>Name:</strong> {{ invoice.customer.name }}</p>
-  <p class="mb-1"><strong>Date:</strong> {{ invoice.date }}</p>
+  <!-- ================= CUSTOMER DETAILS ================= -->
+  <h5>Customer Details</h5>
+  <p><strong>Name:</strong> {{ invoice.customer.name }}</p>
+  <p><strong>Date:</strong> {{ invoice.date }}</p>
   <p>
     <strong>Status:</strong>
     {% if invoice.status == "PAID" %}
@@ -33,7 +34,7 @@
 
   <hr>
 
-  <!-- Items Table -->
+  <!-- ================= ITEMS TABLE ================= -->
   <table class="table table-bordered mt-3">
     <thead class="table-light">
       <tr>
@@ -48,13 +49,11 @@
       {% for item in items %}
       <tr>
         <td>{{ forloop.counter }}</td>
-        <td class="text-end">₹ {{ subtotal|floatformat:2 }}</td>
-        <td class="text-end">₹ {{ total_discount|floatformat:2 }}</td>
-        <td class="text-end">₹ {{ total_tax|floatformat:2 }}</td>
-        <td class="text-end fw-bold">₹ {{ grand_total|floatformat:2 }}</td>
-        <!-- <td class="text-end">₹ {{ paid|floatformat:2 }}</td>
-        <td class="text-end fw-bold">₹ {{ balance|floatformat:2 }}</td> -->
-
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td class="text-end">₹ {{ item.unit_price|floatformat:2 }}</td>
+        <td class="text-end">₹ {{ item.line_total|floatformat:2 }}</td>
+      </tr>
       {% empty %}
       <tr>
         <td colspan="5" class="text-center text-muted">
@@ -65,43 +64,60 @@
     </tbody>
   </table>
 
-  <!-- Totals -->
+  <!-- ================= TOTALS ================= -->
   <div class="row justify-content-end mt-4">
     <div class="col-md-5">
-        <table class="table">
-  <tr>
-    <th>Subtotal</th>
-    <td class="text-end">₹ {{ subtotal|floatformat:2 }}</td>
-  </tr>
-  <tr>
-    <th>Total Discount</th>
-    <td class="text-end">₹ {{ total_discount|floatformat:2 }}</td>
-  </tr>
-  <tr>
-    <th>Total Tax</th>
-    <td class="text-end">₹ {{ total_tax|floatformat:2 }}</td>
-  </tr>
-  <tr class="table-success fw-bold">
-    <th>Grand Total</th>
-    <td class="text-end">₹ {{ grand_total|floatformat:2 }}</td>
-  </tr>
-  <tr>
-    <th>Paid</th>
-    <td class="text-end">₹ {{ paid|floatformat:2 }}</td>
-  </tr>
-  <tr class="table-warning fw-bold">
-    <th>Balance</th>
-    <td class="text-end">₹ {{ balance|floatformat:2 }}</td>
-  </tr>
-
+      <table class="table">
+        <tr>
+          <th>Subtotal</th>
+          <td class="text-end">₹ {{ subtotal|floatformat:2 }}</td>
+        </tr>
+        <tr>
+          <th>Total Discount</th>
+          <td class="text-end">₹ {{ total_discount|floatformat:2 }}</td>
+        </tr>
+        <tr>
+          <th>Total Tax</th>
+          <td class="text-end">₹ {{ total_tax|floatformat:2 }}</td>
+        </tr>
+        <tr class="table-success fw-bold">
+          <th>Grand Total</th>
+          <td class="text-end">₹ {{ grand_total|floatformat:2 }}</td>
+        </tr>
+        <tr>
+          <th>Paid</th>
+          <td class="text-end">₹ {{ paid|floatformat:2 }}</td>
+        </tr>
+        <tr class="table-warning fw-bold">
+          <th>Balance</th>
+          <td class="text-end">₹ {{ balance|floatformat:2 }}</td>
+        </tr>
       </table>
     </div>
   </div>
 
+  <!-- ================= BACK ================= -->
   <a href="{% url 'invoices:invoice_list' %}" class="btn btn-secondary mt-3">
     ← Back to Invoices
   </a>
 
 </div>
+
+<tbody>
+  {% for item in items %}
+  <tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ item.product.name }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>₹ {{ item.unit_price|floatformat:2 }}</td>
+    <td>₹ {{ item.line_total|floatformat:2 }}</td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="5" class="text-center">No items found</td>
+  </tr>
+  {% endfor %}
+</tbody>
+
 
 {% endblock %}

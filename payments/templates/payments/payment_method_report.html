@@ -1,0 +1,15 @@
+<h2>Payment Method Report</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Method</th>
+        <th>Total Amount (₹)</th>
+    </tr>
+
+    {% for r in report %}
+    <tr>
+        <td>{{ r.method }}</td>
+        <td>₹ {{ r.total }}</td>
+    </tr>
+    {% endfor %}
+</table>

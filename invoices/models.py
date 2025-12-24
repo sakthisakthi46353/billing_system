@@ -3,20 +3,18 @@ from decimal import Decimal
 from customers.models import Customer
 from products.models import Product
 
+from django.utils import timezone
 
 class Invoice(models.Model):
-    STATUS_CHOICES = [
-        ("UNPAID", "Unpaid"),
-        ("PARTIALLY_PAID", "Partially Paid"),
-        ("PAID", "Paid"),
-    ]
-
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="UNPAID"
-    )
+    date = models.DateField(default=timezone.now)  # 👈 ADD THIS
+    status = models.CharField(max_length=20, default="UNPAID")
 
+    total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
     def __str__(self):
         return f"Invoice #{self.id}"
 

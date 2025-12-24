@@ -4,32 +4,33 @@
 
 {% block content %}
 
-<div class="card">
+<div class="card p-4">
 
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>Sales Summary</h2>
-        <a href="{% url 'reports:reports_home' %}" class="btn secondary">
-            ← Back to Reports
-        </a>
-    </div>
+    <h2 class="mb-3">Sales Summary</h2>
 
-    <table class="table" style="margin-top:16px;">
-        <tr>
-            <th>Total Invoices</th>
-            <td>{{ total_invoices }}</td>
-        </tr>
-        <tr>
-            <th>Total Sales</th>
-            <td>{{ total_sales }}</td>
-        </tr>
-        <tr>
-            <th>Total Payments</th>
-            <td>{{ total_payments }}</td>
-        </tr>
-        <tr>
-            <th>Average Invoice</th>
-            <td>{{ avg_invoice }}</td>
-        </tr>
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Date</th>
+                <th class="text-end">Total Sales</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in sales %}
+            <tr>
+                <td>{{ row.invoice__date }}</td>
+                <td class="text-end">₹ {{ row.total_sales|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+        <tfoot class="table-dark">
+            <tr>
+                <th>Grand Total</th>
+                <th class="text-end">₹ {{ grand_total|floatformat:2 }}</th>
+            </tr>
+        </tfoot>
     </table>
 
 </div>

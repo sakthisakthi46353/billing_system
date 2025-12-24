@@ -1,84 +1,71 @@
 {% extends "base.html" %}
-{% block title %}Edit Payment #{{ payment.id }}{% endblock %}
+
+{% block title %}Edit Payment{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="card shadow-sm">
+  <div class="card-body">
 
-  <div class="card shadow-sm p-4">
-
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3>Edit Payment #{{ payment.id }}</h3>
-      <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary btn-sm">
+      <h2>Edit Payment #{{ payment.id }}</h2>
+      <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary">
         ← Back to Payments
       </a>
     </div>
 
-    <hr>
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
 
     <form method="post">
       {% csrf_token %}
 
-      <!-- Invoice -->
+      <!-- ✅ CUSTOMER -->
       <div class="mb-3">
-        <label class="form-label">Invoice</label>
-        <select name="invoice" class="form-select" required>
-          {% for inv in invoices %}
-            <option value="{{ inv.id }}"
-              {% if inv.id == payment.invoice.id %}selected{% endif %}>
-              Invoice #{{ inv.id }} — {{ inv.customer.name }}
+        <label class="form-label">Customer</label>
+        <select name="customer" class="form-select" required>
+          {% for c in customers %}
+            <option value="{{ c.id }}"
+              {% if payment.customer_id == c.id %}selected{% endif %}>
+              {{ c.name }}
             </option>
           {% endfor %}
         </select>
       </div>
 
-      <!-- Date -->
+      <!-- ✅ PAYMENT DATE -->
       <div class="mb-3">
         <label class="form-label">Payment Date</label>
-        <input
-          type="date"
-          name="date"
-          class="form-control"
-          value="{{ payment.date|date:'Y-m-d' }}"
-          required
-        >
+        <input type="date"
+               name="date"
+               class="form-control"
+               value="{{ payment.date|date:'Y-m-d' }}"
+               required>
       </div>
 
-      <!-- Amount -->
+      <!-- ✅ AMOUNT -->
       <div class="mb-3">
         <label class="form-label">Amount (₹)</label>
-        <input
-          type="number"
-          step="0.01"
-          name="amount"
-          class="form-control"
-          value="{{ payment.amount }}"
-          required
-        >
-        <small class="text-muted">
-          Changing amount will automatically update invoice status.
-        </small>
+        <input type="number"
+               step="0.01"
+               name="amount"
+               class="form-control"
+               value="{{ payment.amount }}"
+               required>
       </div>
 
-      <!-- Method -->
+      <!-- ✅ METHOD -->
       <div class="mb-3">
         <label class="form-label">Payment Method</label>
         <select name="method" class="form-select">
-          <option value="CASH" {% if payment.method == "CASH" %}selected{% endif %}>
-            Cash
-          </option>
-          <option value="UPI" {% if payment.method == "UPI" %}selected{% endif %}>
-            UPI
-          </option>
-          <option value="BANK" {% if payment.method == "BANK" %}selected{% endif %}>
-            Bank Transfer
-          </option>
+          <option value="CASH" {% if payment.method == "CASH" %}selected{% endif %}>Cash</option>
+          <option value="UPI" {% if payment.method == "UPI" %}selected{% endif %}>UPI</option>
+          <option value="BANK" {% if payment.method == "BANK" %}selected{% endif %}>Bank Transfer</option>
         </select>
       </div>
 
-      <!-- Buttons -->
-      <div class="d-flex gap-2 mt-4">
+      <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">
           💾 Update Payment
         </button>
@@ -90,7 +77,6 @@
     </form>
 
   </div>
-
 </div>
 
 {% endblock %}

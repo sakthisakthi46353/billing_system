@@ -68,18 +68,28 @@
 <header>
     <div class="header-inner">
         <div class="brand">Billing System</div>
- <nav>
-  <a href="{% url 'dashboard' %}">Dashboard</a>
-  <a href="{% url 'customer_list' %}">Customers</a>
-  <a href="{% url 'products:product_list' %}">Products</a>
-  <a href="{% url 'invoices:invoice_list' %}">Invoices</a>
-  <a href="{% url 'payments:payment_list' %}">Payments</a>
-  <a href="{% url 'reports:reports_home' %}">Reports</a>
-  <a href="{% url 'suppliers:supplier_list' %}">Suppliers</a>
-  <a href="{% url 'purchases:purchase_list' %}">Purchases</a>
+
+        <nav>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'customer_list' %}">Customers</a>
+            <a href="{% url 'products:product_list' %}">Products</a>
+            <a href="{% url 'invoices:invoice_list' %}">Invoices</a>
+            <a href="{% url 'payments:payment_list' %}">Payments</a>
+            <a href="{% url 'reports:reports_home' %}">Reports</a>
+            <a href="{% url 'purchases:purchase_list' %}">Purchases</a>
+            <a href="{% url 'suppliers:supplier_list' %}">Supplier</a>
+            <a href="{% url 'supplier_payments:payment_list' %}">Supplier Payments</a>
+
+           
 
 
-</nav>
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger ms-3">
+                    Logout
+                </button>
+            </form>
+        </nav>
     </div>
 </header>
 

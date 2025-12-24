@@ -1,32 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Top Selling Products{% endblock %}
+{% block title %}Top Products{% endblock %}
 
 {% block content %}
-<h2>Top Selling Products</h2>
 
-<table border="1" cellpadding="6">
-  <tr>
-    <th>Product</th>
-    <th>Quantity Sold</th>
-    <th>Total Revenue</th>
-  </tr>
+<div class="card p-4">
+    <h2 class="mb-3">Top Products</h2>
 
-  {% if items %}
-    {% for p in items %}
-    <tr>
-      <td>{{ p.product__name }}</td>
-      <td>{{ p.total_qty }}</td>
-      <td>{{ p.total_revenue }}</td>
-    </tr>
-    {% endfor %}
-  {% else %}
-    <tr>
-      <td colspan="3">No data</td>
-    </tr>
-  {% endif %}
-</table>
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Product</th>
+                <th class="text-end">Total Qty</th>
+                <th class="text-end">Total Sales</th>
+            </tr>
+        </thead>
 
-<br>
-<a href="/reports/">← Back to Reports</a>
+        <tbody>
+            {% for row in products %}
+            <tr>
+                <td>{{ row.product__name }}</td>
+                <td class="text-end">{{ row.total_qty }}</td>
+                <td class="text-end">₹ {{ row.total_sales|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}

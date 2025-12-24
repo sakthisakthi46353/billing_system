@@ -6,8 +6,6 @@ from django.db.models import Sum, F
 from customers.models import Customer
 from products.models import Product
 from invoices.models import Invoice, InvoiceItem
-from payments.models import Payment
-
 
 # ============================
 # MAIN DASHBOARD (HOME PAGE)
@@ -52,36 +50,46 @@ def reports_home(request):
 # ============================
 # CUSTOMER BALANCE SUMMARY
 # ============================
+from django.shortcuts import render
+from django.db.models import Sum, F
+from customers.models import Customer
+from invoices.models import InvoiceItem
+from payments.models import Payment
+
+
 def customer_balance(request):
-    report_data = []   # 🔴 NAME MUST MATCH TEMPLATE
+    report_data = []
 
     customers = Customer.objects.all()
 
-    for c in customers:
-        # Total invoiced
-        total_invoiced = Decimal("0.00")
-        items = InvoiceItem.objects.filter(
-            invoice__customer=c
-        )
-        for item in items:
-            total_invoiced += item.line_total
+    for customer in customers:
+        # Total invoiced amount
+        invoice_total = InvoiceItem.objects.filter(
+            invoice__customer=customer
+        ).aggregate(
+            total=Sum(F("quantity") * F("unit_price"))
+        )["total"] or 0
 
-        # Total paid
-        total_paid = Payment.objects.filter(
-            invoice__customer=c
+        # Total paid amount
+        paid_total = Payment.objects.filter(
+            customer=customer
         ).aggregate(
             total=Sum("amount")
-        )["total"] or Decimal("0.00")
+        )["total"] or 0
 
+        balance = invoice_total - paid_total
+
+        # ✅ ONLY ONE APPEND (inside loop)
         report_data.append({
-            "customer": c,
-            "total_invoice": total_invoiced,
-            "total_paid": total_paid,
-            "balance": total_invoiced - total_paid,
+            "customer": customer,
+            "invoice_total": invoice_total,
+            "paid_total": paid_total,
+            "balance": balance,
         })
 
+    # ✅ return MUST be OUTSIDE for loop
     return render(request, "reports/customer_balance.html", {
-        "report_data": report_data   # 🔴 SAME NAME
+        "report_data": report_data
     })
 
 
@@ -146,42 +154,78 @@ def customer_statement_select(request):
 def customer_statement(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
 
-    entries = []
+    rows = []
+    running_balance = 0
 
-    invoices = Invoice.objects.filter(customer=customer)
+    # INVOICES
+    invoices = Invoice.objects.filter(customer=customer).order_by("date")
+
     for inv in invoices:
-        inv_total = Decimal("0.00")
-        for item in inv.items.all():
-            inv_total += item.line_total
+        invoice_total = InvoiceItem.objects.filter(
+            invoice=inv
+        ).aggregate(
+            total=Sum(F("quantity") * F("unit_price"))
+        )["total"] or 0
 
-        entries.append({
+        running_balance += invoice_total
+
+        rows.append({
             "date": inv.date,
-            "desc": f"Invoice #{inv.id}",
-            "debit": inv_total,
-            "credit": None,
+            "description": f"Invoice #{inv.id}",
+            "debit": invoice_total,
+            "credit": "",
+            "balance": running_balance,
         })
 
-    payments = Payment.objects.filter(invoice__customer=customer)
+    # PAYMENTS
+    payments = Payment.objects.filter(customer=customer).order_by("date")
+
     for pay in payments:
-        entries.append({
-            "date": pay.date.date(),
-            "desc": "Payment",
-            "debit": None,
+        running_balance -= pay.amount
+
+        rows.append({
+            "date": pay.date,
+            "description": "Payment",
+            "debit": "",
             "credit": pay.amount,
+            "balance": running_balance,
         })
-
-    # Sort by date
-    entries.sort(key=lambda x: x["date"])
-
-    balance = Decimal("0.00")
-    for e in entries:
-        if e["debit"]:
-            balance += e["debit"]
-        if e["credit"]:
-            balance -= e["credit"]
-        e["balance"] = balance
 
     return render(request, "reports/customer_statement.html", {
         "customer": customer,
-        "entries": entries
+        "rows": rows,
+    })
+from django.shortcuts import get_object_or_404, render
+from django.db.models import Sum, F
+
+from invoices.models import Invoice, InvoiceItem
+from payments.models import Payment
+
+
+def invoice_pdf(request, pk):
+    invoice = get_object_or_404(Invoice, id=pk)
+
+    # Invoice items
+    items = InvoiceItem.objects.filter(invoice=invoice)
+
+    # Subtotal (qty * unit_price)
+    subtotal = items.aggregate(
+        total=Sum(F("quantity") * F("unit_price"))
+    )["total"] or 0
+
+    # ✅ Payments are linked by CUSTOMER (NOT invoice)
+    paid = Payment.objects.filter(
+        customer=invoice.customer
+    ).aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    balance = subtotal - paid
+
+    return render(request, "invoices/invoice_pdf.html", {
+        "invoice": invoice,
+        "items": items,
+        "subtotal": subtotal,
+        "paid": paid,
+        "balance": balance,
     })

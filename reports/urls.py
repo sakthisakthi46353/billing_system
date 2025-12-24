@@ -1,6 +1,12 @@
 from django.urls import path
-from core import views   # reports views are inside core app
+from . import views
 
+app_name = "reports"
+
+urlpatterns = [
+    path('', views.reports_home, name='reports_home'),
+    path('customer-balance/', views.customer_balance, name='customer_balance'),
+]
 app_name = "reports"
 
 path(
@@ -60,7 +66,14 @@ urlpatterns = [
         views.customer_statement,
         name="customer_statement"
     ),
+
+
+    
 ]
+
 app_name = "reports"
 
-path("", views.reports_home, name="reports_home")
+
+lpatterns = [
+    path("customer-balance/", views.customer_balance, name="customer_balance"),
+]

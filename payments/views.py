@@ -9,13 +9,12 @@ from invoices.models import Invoice
 # =========================
 def payment_list(request):
     payments = Payment.objects.select_related(
-        'invoice', 'invoice__customer'
-    ).all()
+        "customer"
+    ).order_by("-id")
 
-    return render(request, 'payments/payment_list.html', {
-        'payments': payments
+    return render(request, "payments/payment_list.html", {
+        "payments": payments
     })
-
 
 # =========================
 # ADD PAYMENT  (like products/add/)
@@ -83,86 +82,51 @@ from invoices.models import Invoice
 # =========================
 def payment_list(request):
     payments = Payment.objects.select_related(
-        "invoice", "invoice__customer"
-    ).order_by("-date")
+        "customer"   # 👈 invoice REMOVE
+    ).order_by("-id")
 
     return render(request, "payments/payment_list.html", {
         "payments": payments
     })
 
 
+
 # =========================
-# ADD PAYMENT
-# =========================
-from customers.models import Customer
 from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum
-from .models import Payment
-from invoices.models import Invoice
+from django.shortcuts import render, redirect
+from customers.models import Customer
+from payments.models import Payment
 
+def payment_add(request):
 
-def payment_add(request, invoice_id=None):
-
-    customers = Customer.objects.all()   # ✅ IMPORTANT
-    invoices = Invoice.objects.all()
-    invoice = None
-
-    # if coming from invoice page
-    if invoice_id:
-        invoice = get_object_or_404(Invoice, id=invoice_id)
+    customers = Customer.objects.all()
 
     if request.method == "POST":
 
         customer_id = request.POST.get("customer")
         amount = request.POST.get("amount")
+        date = request.POST.get("date")
+        method = request.POST.get("method")
 
         if not customer_id or not amount:
             return render(request, "payments/payment_add.html", {
                 "customers": customers,
-                "invoices": invoices,
                 "error": "Customer and Amount required"
             })
 
-        # 🔥 get oldest unpaid invoice for customer
-        invoice = Invoice.objects.filter(
-            customer_id=customer_id
-        ).order_by("date").first()
-
-        if not invoice:
-            return render(request, "payments/payment_add.html", {
-                "customers": customers,
-                "invoices": invoices,
-                "error": "No invoice found for this customer"
-            })
-
+        # ✅ CREATE PAYMENT (CORRECT)
         Payment.objects.create(
-            invoice=invoice,
-            amount=Decimal(amount)
+            customer_id=customer_id,
+            amount=Decimal(amount),
+            date=date,
+            method=method
         )
-
-        # 🔄 update invoice status
-        total_paid = invoice.payments.aggregate(
-            total=Sum("amount")
-        )["total"] or Decimal("0.00")
-
-        if total_paid == 0:
-            invoice.status = "UNPAID"
-        elif total_paid < invoice.total:
-            invoice.status = "PARTIALLY_PAID"
-        else:
-            invoice.status = "PAID"
-
-        invoice.save()
 
         return redirect("payments:payment_list")
 
     return render(request, "payments/payment_add.html", {
-        "customers": customers,   # ✅ MUST
-        "invoices": invoices,
-        "invoice": invoice
+        "customers": customers
     })
-
 
 # =========================
 # VIEW PAYMENT
@@ -183,38 +147,40 @@ def payment_view(request, pk):
 # =========================
 # EDIT PAYMENT
 # =========================
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from customers.models import Customer
+from payments.models import Payment
+
 def payment_edit(request, pk):
+
     payment = get_object_or_404(Payment, pk=pk)
-    invoices = Invoice.objects.select_related("customer").all()
+    customers = Customer.objects.all()
 
     if request.method == "POST":
-        invoice_id = request.POST.get("invoice")
+        customer_id = request.POST.get("customer")
         amount = request.POST.get("amount")
         date = request.POST.get("date")
         method = request.POST.get("method")
 
-        if not invoice_id or not amount:
-            messages.error(request, "Invoice and Amount are required")
-            return redirect("payments:payment_edit", pk=pk)
+        if not customer_id or not amount:
+            return render(request, "payments/payment_edit.html", {
+                "payment": payment,
+                "customers": customers,
+                "error": "Customer and Amount required"
+            })
 
-        old_invoice = payment.invoice
-
-        payment.invoice = get_object_or_404(Invoice, id=invoice_id)
+        payment.customer_id = customer_id
         payment.amount = Decimal(amount)
         payment.date = date
         payment.method = method
         payment.save()
 
-        # update both invoices
-        _update_invoice_status(old_invoice)
-        _update_invoice_status(payment.invoice)
-
-        messages.success(request, "Payment updated successfully")
         return redirect("payments:payment_list")
 
     return render(request, "payments/payment_edit.html", {
         "payment": payment,
-        "invoices": invoices
+        "customers": customers
     })
 
 
@@ -302,3 +268,13 @@ def _update_invoice_status(invoice):
         invoice.status = "PAID"
 
     invoice.save()
+from django.db.models import Sum
+
+def payment_method_report(request):
+    report = Payment.objects.values("method").annotate(
+        total=Sum("amount")
+    )
+
+    return render(request, "payments/payment_method_report.html", {
+        "report": report
+    })

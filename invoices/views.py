@@ -101,35 +101,32 @@ def invoice_add(request):
 # ================================
 # VIEW INVOICE
 # ================================
+from django.shortcuts import render, get_object_or_404
+from decimal import Decimal
+
+from invoices.models import Invoice, InvoiceItem
+from payments.models import Payment
+
+
 def invoice_view(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
-    items = invoice.items.all()
+    items = InvoiceItem.objects.filter(invoice=invoice)
 
+    # ✅ Calculate subtotal MANUALLY (NOT ORM)
     subtotal = Decimal("0.00")
+    for item in items:
+        subtotal += item.line_total   # ✅ property OK
+
     total_discount = Decimal("0.00")
     total_tax = Decimal("0.00")
 
-    for item in items:
-        base = item.unit_price * item.quantity
+    grand_total = subtotal + total_tax - total_discount
 
-        if item.discount_type == "percent":
-            discount = base * (item.discount_value / Decimal("100"))
-        else:
-            discount = item.discount_value
-
-        taxable = base - discount
-        tax = taxable * (item.tax_percent / Decimal("100"))
-
-        subtotal += base
-        total_discount += discount
-        total_tax += tax
-
-    grand_total = subtotal - total_discount + total_tax
-
-    # ✅ FIXED HERE
     paid = Payment.objects.filter(
-        invoice=invoice
-    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+        customer=invoice.customer
+    ).aggregate(
+        total=Sum("amount")
+    )["total"] or Decimal("0.00")
 
     balance = grand_total - paid
 
@@ -143,6 +140,7 @@ def invoice_view(request, pk):
         "paid": paid,
         "balance": balance,
     })
+
 
 # ================================
 # DELETE INVOICE
@@ -321,3 +319,52 @@ def invoice_pdf(request, pk):
     c.save()
 
     return response
+from django.shortcuts import get_object_or_404, render
+from decimal import Decimal
+from django.db.models import Sum
+
+from invoices.models import Invoice, InvoiceItem
+from payments.models import Payment
+
+
+def invoice_pdf(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    items = InvoiceItem.objects.filter(invoice=invoice)
+
+    # ✅ Subtotal calculation (NO ORM Sum on line_total)
+    subtotal = Decimal("0.00")
+    for item in items:
+        subtotal += item.line_total
+
+    total_discount = Decimal("0.00")
+    total_tax = Decimal("0.00")
+
+    grand_total = subtotal + total_tax - total_discount
+
+    # ✅ FIX HERE (customer based payment)
+    paid = Payment.objects.filter(
+        customer=invoice.customer
+    ).aggregate(
+        total=Sum("amount")
+    )["total"] or Decimal("0.00")
+
+    balance = grand_total - paid
+
+    return render(request, "invoices/invoice_pdf.html", {
+        "invoice": invoice,
+        "items": items,
+        "subtotal": subtotal,
+        "total_discount": total_discount,
+        "total_tax": total_tax,
+        "grand_total": grand_total,
+        "paid": paid,
+        "balance": balance,
+    })
+from django.shortcuts import get_object_or_404, render
+from decimal import Decimal
+from django.db.models import Sum
+
+from invoices.models import Invoice, InvoiceItem
+from payments.models import Payment
+
+

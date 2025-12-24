@@ -1,44 +1,44 @@
-<h2>Customer Balance Summary</h2>
+{% extends "base.html" %}
 
-<table border="1" cellpadding="10">
-    <tr>
-        <th>Customer</th>
-        <th>Total Invoiced</th>
-        <th>Total Paid</th>
-        <th>Balance</th>
-    </tr>
+{% block title %}Customer Balance Summary{% endblock %}
 
-    {% for row in data %}
-    <tr>
-        <td>{{ row.customer.name }}</td>
-        <td>{{ row.invoiced }}</td>
-        <td>{{ row.paid }}</td>
-        <td>{{ row.balance }}</td>
-    </tr>
-    {% endfor %}
-</table>
+{% block content %}
+<div class="card">
 
-<br>
-<a href="/reports/">← Back to Reports</a>
-<h2>Customer Balance Summary</h2>
+    <h2>Customer Balance Summary</h2>
 
-<table border="1" cellpadding="10">
-    <tr>
-        <th>Customer</th>
-        <th>Total Invoiced</th>
-        <th>Total Paid</th>
-        <th>Balance</th>
-    </tr>
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Total Invoiced</th>
+                <th>Total Paid</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
 
-    {% for row in report %}
-    <tr>
-        <td>{{ row.customer.name }}</td>
-        <td>{{ row.invoiced }}</td>
-        <td>{{ row.paid }}</td>
-        <td>{{ row.balance }}</td>
-    </tr>
-    {% endfor %}
-</table>
+        <tbody>
+            {% for row in report_data %}
+            <tr>
+                <td>{{ row.customer.name }}</td>
 
-<br>
-<a href="/reports/">← Back to Reports</a>
+                <!-- ✅ THIS WAS MISSING -->
+                <td>₹ {{ row.invoice_total }}</td>
+
+                <!-- ✅ THIS WAS MISSING -->
+                <td>₹ {{ row.paid_total }}</td>
+
+                <td>
+                    {% if row.balance > 0 %}
+                        <span class="text-danger">₹ {{ row.balance }}</span>
+                    {% else %}
+                        <span class="text-success">₹ {{ row.balance }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

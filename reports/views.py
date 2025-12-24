@@ -18,71 +18,92 @@ def reports_home(request):
 # =========================
 # CUSTOMER BALANCE SUMMARY
 # =========================
+from django.shortcuts import render
+from django.db.models import Sum, F
+from customers.models import Customer
+from invoices.models import InvoiceItem
+from payments.models import Payment
+
 def customer_balance(request):
     report_data = []
 
     customers = Customer.objects.all()
 
     for customer in customers:
-        invoice_total = Invoice.objects.filter(
-            customer=customer
-        ).aggregate(total=Sum('total'))['total'] or 0
-
-        paid_total = Payment.objects.filter(
+        # ✅ Total Invoiced
+        total_invoiced = InvoiceItem.objects.filter(
             invoice__customer=customer
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        ).aggregate(
+            total=Sum(F('unit_price') * F('quantity'))
+        )['total'] or 0
 
-        balance = invoice_total - paid_total
+        # ✅ Total Paid (FIXED)
+        total_paid = Payment.objects.filter(
+            customer=customer
+        ).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+
+        balance = total_invoiced - total_paid
 
         report_data.append({
             'customer': customer,
-            'invoice_total': invoice_total,
-            'paid_total': paid_total,
+            'total_invoiced': total_invoiced,
+            'total_paid': total_paid,
             'balance': balance
         })
 
     return render(request, 'reports/customer_balance.html', {
-        'report': report_data
+        'report_data': report_data
     })
 
 
 # =========================
 # SALES SUMMARY REPORT
 # =========================
+from django.db.models import Sum, F
+from invoices.models import InvoiceItem
+
 def sales_summary(request):
-    total_invoices = Invoice.objects.count()
+    sales = (
+        InvoiceItem.objects
+        .values('invoice__date')
+        .annotate(total_sales=Sum(F('unit_price') * F('quantity')))
+        .order_by('invoice__date')
+    )
 
-    total_sales = Invoice.objects.aggregate(
-        total=Sum('total')
-    )['total'] or 0
-
-    total_tax = Invoice.objects.aggregate(
-        total=Sum('tax')
-    )['total'] or 0
+    grand_total = (
+        InvoiceItem.objects.aggregate(
+            total=Sum(F('unit_price') * F('quantity'))
+        )['total'] or 0
+    )
 
     return render(request, 'reports/sales_summary.html', {
-        'total_invoices': total_invoices,
-        'total_sales': total_sales,
-        'total_tax': total_tax
+        'sales': sales,
+        'grand_total': grand_total
     })
 
 
 # =========================
 # TOP SELLING PRODUCTS
 # =========================
+from django.shortcuts import render
+from django.db.models import Sum, F
+from invoices.models import InvoiceItem
+
 def top_products(request):
-    items = (
+    products = (
         InvoiceItem.objects
         .values('product__name')
         .annotate(
             total_qty=Sum('quantity'),
-            total_revenue=Sum(F('quantity') * F('price'))
+            total_sales=Sum(F('unit_price') * F('quantity'))
         )
         .order_by('-total_qty')
     )
 
     return render(request, 'reports/top_products.html', {
-        'items': items
+        'products': products
     })
 
 
@@ -99,45 +120,40 @@ def customer_statement_select(request):
 # =========================
 # CUSTOMER STATEMENT - FINAL
 # =========================
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Sum, F
+from customers.models import Customer
+from invoices.models import Invoice, InvoiceItem
+from payments.models import Payment
+
 def customer_statement(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
 
-    invoices = Invoice.objects.filter(customer=customer)
-    payments = Payment.objects.filter(invoice__customer=customer)
+    # 🔹 Invoices for this customer
+    invoices = Invoice.objects.filter(customer=customer).order_by('date')
 
-    entries = []
+    # 🔹 Payments for this customer (FIXED)
+    payments = Payment.objects.filter(customer=customer).order_by('date')
 
-    # INVOICES → Debit
-    for inv in invoices:
-        entries.append({
-            'date': inv.date,
-            'desc': f'Invoice #{inv.id}',
-            'debit': inv.total,
-            'credit': None
-        })
+    # 🔹 Invoice total
+    total_invoiced = InvoiceItem.objects.filter(
+        invoice__customer=customer
+    ).aggregate(
+        total=Sum(F('unit_price') * F('quantity'))
+    )['total'] or 0
 
-    # PAYMENTS → Credit
-    for pay in payments:
-        entries.append({
-            'date': pay.date.date(),
-            'desc': 'Payment',
-            'debit': None,
-            'credit': pay.amount
-        })
+    # 🔹 Payment total
+    total_paid = payments.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
 
-    # sort by date
-    entries.sort(key=lambda x: x['date'])
-
-    # running balance
-    balance = 0
-    for e in entries:
-        if e['debit']:
-            balance += e['debit']
-        if e['credit']:
-            balance -= e['credit']
-        e['balance'] = balance
+    balance = total_invoiced - total_paid
 
     return render(request, 'reports/customer_statement.html', {
         'customer': customer,
-        'entries': entries
+        'invoices': invoices,
+        'payments': payments,
+        'total_invoiced': total_invoiced,
+        'total_paid': total_paid,
+        'balance': balance
     })

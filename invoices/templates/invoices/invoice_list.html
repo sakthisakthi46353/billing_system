@@ -26,8 +26,11 @@
       {% for invoice in invoices %}
       <tr>
         <td>{{ forloop.counter }}</td>
+
         <td>{{ invoice.customer.name }}</td>
+
         <td>₹ {{ invoice.total|floatformat:2 }}</td>
+
         <td>
           {% if invoice.status == "PAID" %}
             <span class="badge bg-success">PAID</span>
@@ -37,21 +40,19 @@
             <span class="badge bg-danger">UNPAID</span>
           {% endif %}
         </td>
+
         <td class="actions">
           <a href="{% url 'invoices:invoice_view' invoice.id %}">View</a>
-          |<a href="{% url 'invoices:invoice_list' %}">Invoices</a>
-
+          |
           <a href="{% url 'invoices:invoice_delete' invoice.id %}"
              onclick="return confirm('Delete this invoice?')"
              class="text-danger">
-             Delete
+            Delete
           </a>
           |
-         <a href="{% url 'payments:payment_add_invoice' invoice.id %}">
-    💰 Payment
+          <a href="{% url 'payments:payment_add' %}">
+            💰 Payment
           </a>
-
-
         </td>
       </tr>
       {% empty %}

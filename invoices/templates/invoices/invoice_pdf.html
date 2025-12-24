@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice {{ invoice.id }}</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        h2 {
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        .right {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Invoice #{{ invoice.id }}</h2>
+
+<p>
+    <strong>Customer:</strong> {{ invoice.customer.name }} <br>
+    <strong>Date:</strong> {{ invoice.date }} <br>
+    <strong>Status:</strong> {{ invoice.status }}
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>S.No</th>
+            <th>Product</th>
+            <th class="right">Qty</th>
+            <th class="right">Unit Price</th>
+            <th class="right">Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.product.name }}</td>
+            <td class="right">{{ item.quantity }}</td>
+            <td class="right">{{ item.unit_price }}</td>
+            <td class="right">{{ item.quantity|floatformat:2|add:"0"|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <tr>
+        <th>Subtotal</th>
+        <td class="right">{{ subtotal }}</td>
+    </tr>
+    <tr>
+        <th>Total Paid</th>
+        <td class="right">{{ paid }}</td>
+    </tr>
+    <tr>
+        <th>Balance</th>
+        <td class="right">{{ balance }}</td>
+    </tr>
+</table>
+
+</body>
+</html>

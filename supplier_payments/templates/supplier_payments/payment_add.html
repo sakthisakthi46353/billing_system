@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add Supplier Payment</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  <p>
+    <label>Supplier</label><br>
+    <select name="supplier" required>
+      <option value="">-- Select Supplier --</option>
+      {% for s in suppliers %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </p>
+
+  <p>
+    <label>Date</label><br>
+    <input type="date" name="date" required>
+  </p>
+
+  <p>
+    <label>Payment Method</label><br>
+    <select name="payment_method" required>
+      <option value="">-- Select Method --</option>
+      {% for key, value in methods %}
+        <option value="{{ key }}">{{ value }}</option>
+      {% endfor %}
+    </select>
+  </p>
+
+  <p>
+    <label>Amount</label><br>
+    <input type="number" step="0.01" name="amount" required>
+  </p>
+
+  <button type="submit">Save</button>
+</form>
+
+<a href="{% url 'supplier_payments:payment_list' %}">← Back</a>
+{% endblock %}
